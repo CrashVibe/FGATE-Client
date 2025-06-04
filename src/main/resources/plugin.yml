@@ -1,0 +1,4 @@
+name: FGateClient
+version: '${project.version}'
+main: com.litesugar.fgateclient.FGateClient
+api-version: '1.16'
