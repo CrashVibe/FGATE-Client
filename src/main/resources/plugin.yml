@@ -2,3 +2,24 @@ name: FGateClient
 version: '${project.version}'
 main: com.litesugar.fgateclient.FGateClient
 api-version: '1.16'
+
+commands:
+  fgate:
+    description: FGateClient
+    usage: /fgate
+    aliases: [FGate,Fgate,fGate]
+    permission: fgate.command
+  fgate.reload:
+    description: Reload the plugin
+    usage: /fgate reload
+    aliases: [rl,reload]
+    permission: fgate.command.reload
+    permission-message: You do not have permission to use this command.
+
+permissions:
+  fgate.command:
+      default: true
+      description: FGateClient
+  fgate.command.reload:
+      default: op
+      description: Allow to reload the plugin

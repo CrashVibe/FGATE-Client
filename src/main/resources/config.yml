@@ -1,8 +1,4 @@
-bind_address: 127.0.0.1
-# 我们应该监听哪个地址？
-bind_port: 7800
-# 我们应将WebSocket服务器绑定到哪个端口？
-auth_token: null
-# 如果您已设置节点Token，则需要添加验证字段，反之无需添加验证请求头，但是不设置节点Token（设置为null）并不是推荐的做法，除非您的FGate Nexus与节点在同一台设备，并且节点监听`127.0.0.1`,否则您的Minecraft服务器可能面临被攻击的风险
-max_token_try_count: 3
-# 错误Token的最大尝试次数
+serverAddress: ws://127.0.0.1:7800/api/
+# 服务端的地址是什么？
+authToken: null
+# 请设置鉴权Token，来访问到管理面板

@@ -23,8 +23,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>14</source>
+                    <target>14</target>
 
                 </configuration>
             </plugin>
@@ -82,9 +82,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.java-websocket</groupId>
-            <artifactId>Java-WebSocket</artifactId>
-            <version>1.6.0</version>
+
+            <groupId>org.apache.tomcat.embed</groupId>
+
+            <artifactId>tomcat-embed-websocket</artifactId>
+
+            <version>9.0.56</version>
+
         </dependency>
     </dependencies>
 </project>
