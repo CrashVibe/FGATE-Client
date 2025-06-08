@@ -1,0 +1,21 @@
+# RemoteClient Plugin Configuration
+
+# WebSocket连接配置
+websocket:
+  # WebSocket服务器地址
+  url: "wss://127.0.0.1:3000/api"
+
+  # 认证Token
+  token: "your-auth-token-here"
+
+# RCON配置
+rcon:
+  # 是否使用内置RCON（通过Bukkit API执行命令）
+  # true: 使用内置方式执行命令（推荐）
+  # false: 连接到外部RCON服务器
+  use-builtin: true
+
+  # 外部RCON服务器配置（仅在use-builtin为false时使用）
+  host: "localhost"
+  port: 25575
+  password: "your-rcon-password"
