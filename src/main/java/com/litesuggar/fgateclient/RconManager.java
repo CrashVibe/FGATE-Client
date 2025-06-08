@@ -53,32 +53,27 @@ public class RconManager {
             return executeExternalRconCommand(command);
         }
     }
-
     private String executeBuiltinCommand(String command) throws Exception {
         CompletableFuture<String> future = new CompletableFuture<>();
 
-        // 使用自定义CommandSender来捕获输出
+        // 外层是异步，内部要切换到主线程（Global Region）
         plugin.foliaLib.getScheduler().runAsync(task -> {
-            try {
-                ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
+            plugin.foliaLib.getScheduler().runNextTick(task1 -> {
+                try {
+                    ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
 
-                // 创建一个临时的输出捕获器
-                CommandOutputCapture outputCapture = new CommandOutputCapture();
-
-                // 在主线程执行命令
-                boolean success = Bukkit.dispatchCommand(consoleSender, command);
-
-                // 获取命令输出（这里简化处理，实际可能需要更复杂的输出捕获）
-                String output = success ? "Command executed successfully" : "Command execution failed";
-                future.complete(output);
-
-            } catch (Exception e) {
-                future.completeExceptionally(e);
-            }
+                    boolean success = Bukkit.dispatchCommand(consoleSender, command);
+                    String output = success ? "Command executed successfully" : "Command execution failed";
+                    future.complete(output);
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
+                }
+            });
         });
 
         return future.get(10, TimeUnit.SECONDS);
     }
+
 
     private String executeExternalRconCommand(String command) throws Exception {
         if (!rconConnected) {

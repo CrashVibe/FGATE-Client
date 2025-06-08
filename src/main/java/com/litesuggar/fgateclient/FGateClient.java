@@ -90,12 +90,16 @@ public class FGateClient extends JavaPlugin implements Listener {
                 }
             }
 
-            if (player != null && player.isOnline()) {
-                player.kick(net.kyori.adventure.text.Component.text(reason));
-                getLogger().info("Kicked player " + player.getName() + " with reason: " + reason);
-            } else {
-                getLogger().warning("Could not find online player: " + playerIdentifier);
-            }
+        if (player != null && player.isOnline()) {
+            // 在主线程执行踢出操作
+            org.bukkit.entity.Player finalPlayer = player;
+            foliaLib.getScheduler().runNextTick(kickTask -> {
+                finalPlayer.kick(net.kyori.adventure.text.Component.text(reason));
+                getLogger().info("Kicked player " + finalPlayer.getName() + " with reason: " + reason);
+            });
+        } else {
+            getLogger().warning("Could not find online player: " + playerIdentifier);
+        }
         });
     }
 
