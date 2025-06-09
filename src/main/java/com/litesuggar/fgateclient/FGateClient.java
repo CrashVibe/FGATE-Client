@@ -32,7 +32,6 @@ public class FGateClient extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         // 保存默认配置
-        initListeners();
         saveDefaultConfig();
         config = getConfig();
 
@@ -44,6 +43,8 @@ public class FGateClient extends JavaPlugin implements Listener {
         webSocketManager = new WebSocketManager(this, rconManager); // 初始化WebSocket管理器
 
         getServer().getPluginManager().registerEvents(this, this); // 注册事件监听器
+
+        initListeners();
 
         // 异步连接WebSocket
         foliaLib.getScheduler().runAsync(task -> {

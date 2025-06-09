@@ -12,6 +12,7 @@ public class OnJoin implements Listener {
 
     public OnJoin(FGateClient plugin) {
         this.plugin = plugin;
+        plugin.getLogger().info("注册玩家加入事件监听器");
         this.webSocketManager = plugin.getWebSocketManager();
     }
 
@@ -20,6 +21,7 @@ public class OnJoin implements Listener {
         plugin.foliaLib.getScheduler().runAsync(task -> {
             try {
                 if (webSocketManager != null && webSocketManager.isConnected()) {
+                    plugin.getLogger().info("发送玩家加入事件: " + event.getPlayer().getName());
                     webSocketManager.sendPlayerJoinEvent(
                             event.getPlayer().getName(),
                             event.getPlayer().getUniqueId().toString(),
