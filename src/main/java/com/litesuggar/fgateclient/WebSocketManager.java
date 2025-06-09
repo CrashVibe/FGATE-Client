@@ -53,12 +53,6 @@ public class WebSocketManager {
 
         client.connect();
 
-        int timeout = 10;
-        while (!client.isOpen() && timeout > 0) {
-            Thread.sleep(1000);
-            timeout--;
-        }
-
         if (!client.isOpen()) {
             plugin.getLogger().warning("Websocket 连接超时");
             return;
