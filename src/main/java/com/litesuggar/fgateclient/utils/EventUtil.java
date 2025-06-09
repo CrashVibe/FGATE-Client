@@ -7,7 +7,8 @@ public class EventUtil {
 
     public static void registerEvents(Listener... listeners) {
         for (Listener listener : listeners) {
-            FGateClient.getInstance().getServer().getPluginManager().registerEvents(listener, FGateClient.getInstance());
+            FGateClient.getInstance().getServer().getPluginManager().registerEvents(listener,
+                    FGateClient.getInstance());
         }
     }
 }

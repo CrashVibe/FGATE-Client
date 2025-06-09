@@ -1,7 +1,10 @@
-package com.litesuggar.fgateclient;
+package com.litesuggar.fgateclient.service;
 
+import com.litesuggar.fgateclient.config.ConfigManager;
+import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -9,37 +12,36 @@ import java.nio.ByteOrder;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+/**
+ * RCON 管理器 - 负责RCON连接和命令执行
+ */
 public class RconManager {
 
-    private final FGateClient plugin;
-    private final boolean useBuiltinRcon;
-    private final String rconHost;
-    private final int rconPort;
-    private final String rconPassword;
+    private final Logger logger;
+    private final FoliaLib foliaLib;
+    private final ConfigManager configManager;
 
+    // 外部 RCON 相关字段
     private Socket rconSocket;
     private DataOutputStream rconOut;
     private DataInputStream rconIn;
     private boolean rconConnected = false;
     private int requestId = 1;
 
-    public RconManager(FGateClient plugin) {
-        this.plugin = plugin;
-        var config = plugin.getConfig();
+    public RconManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager) {
+        this.logger = logger;
+        this.foliaLib = foliaLib;
+        this.configManager = configManager;
 
-        this.useBuiltinRcon = config.getBoolean("rcon.use-builtin", true);
-        this.rconHost = config.getString("rcon.host", "localhost");
-        this.rconPort = config.getInt("rcon.port", 25575);
-        this.rconPassword = config.getString("rcon.password", "");
-
-        if (!useBuiltinRcon && isRconConfigured()) {
+        if (!configManager.isUseBuiltinRcon() && configManager.isRconConfigured()) {
             initializeExternalRcon();
         }
     }
 
-    public boolean isRconAvailable() {
-        if (useBuiltinRcon) {
+    public boolean isAvailable() {
+        if (configManager.isUseBuiltinRcon()) {
             return true; // 内置RCON总是可用的
         } else {
             return rconConnected;
@@ -47,23 +49,33 @@ public class RconManager {
     }
 
     public String executeCommand(String command) throws Exception {
-        if (useBuiltinRcon) {
+        if (configManager.isUseBuiltinRcon()) {
             return executeBuiltinCommand(command);
         } else {
             return executeExternalRconCommand(command);
         }
     }
+
+    public void close() {
+        if (rconSocket != null) {
+            try {
+                rconSocket.close();
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "关闭 RCON 连接时出错", e);
+            }
+        }
+        rconConnected = false;
+    }
+
     private String executeBuiltinCommand(String command) throws Exception {
         CompletableFuture<String> future = new CompletableFuture<>();
 
-        // 外层是异步，内部要切换到主线程（Global Region）
-        plugin.foliaLib.getScheduler().runAsync(task -> {
-            plugin.foliaLib.getScheduler().runNextTick(task1 -> {
+        foliaLib.getScheduler().runAsync(task -> {
+            foliaLib.getScheduler().runNextTick(task1 -> {
                 try {
                     ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
-
                     boolean success = Bukkit.dispatchCommand(consoleSender, command);
-                    String output = success ? "Command executed successfully" : "Command execution failed";
+                    String output = success ? "命令执行成功" : "命令执行失败";
                     future.complete(output);
                 } catch (Exception e) {
                     future.completeExceptionally(e);
@@ -74,10 +86,9 @@ public class RconManager {
         return future.get(10, TimeUnit.SECONDS);
     }
 
-
     private String executeExternalRconCommand(String command) throws Exception {
         if (!rconConnected) {
-            throw new Exception("RCON not connected");
+            throw new Exception("RCON 未连接");
         }
 
         synchronized (this) {
@@ -90,7 +101,7 @@ public class RconManager {
             RconPacket response = readRconPacket();
 
             if (response.id != id) {
-                throw new Exception("RCON response ID mismatch");
+                throw new Exception("RCON 响应 ID 不匹配");
             }
 
             return response.body;
@@ -99,23 +110,23 @@ public class RconManager {
 
     private void initializeExternalRcon() {
         try {
-            rconSocket = new Socket(rconHost, rconPort);
+            rconSocket = new Socket(configManager.getRconHost(), configManager.getRconPort());
             rconOut = new DataOutputStream(rconSocket.getOutputStream());
             rconIn = new DataInputStream(rconSocket.getInputStream());
 
             // 认证
-            sendRconPacket(1, 3, rconPassword); // Type 3 = SERVERDATA_AUTH
+            sendRconPacket(1, 3, configManager.getRconPassword()); // Type 3 = SERVERDATA_AUTH
             RconPacket authResponse = readRconPacket();
 
             if (authResponse.id == -1) {
-                throw new Exception("RCON authentication failed");
+                throw new Exception("RCON 认证失败");
             }
 
             rconConnected = true;
-            plugin.getLogger().info("External RCON connected successfully");
+            logger.info("外部 RCON 连接成功");
 
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to connect to external RCON", e);
+            logger.log(Level.SEVERE, "连接外部 RCON 失败", e);
             rconConnected = false;
         }
     }
@@ -163,21 +174,6 @@ public class RconManager {
         return new RconPacket(id, type, body);
     }
 
-    private boolean isRconConfigured() {
-        return rconPassword != null && !rconPassword.isEmpty();
-    }
-
-    public void close() {
-        if (rconSocket != null) {
-            try {
-                rconSocket.close();
-            } catch (IOException e) {
-                plugin.getLogger().log(Level.WARNING, "Error closing RCON connection", e);
-            }
-        }
-        rconConnected = false;
-    }
-
     private static class RconPacket {
         final int id;
         final int type;
@@ -188,11 +184,5 @@ public class RconManager {
             this.type = type;
             this.body = body;
         }
-    }
-
-    private static class CommandOutputCapture {
-        // 这里可以实现更复杂的输出捕获逻辑
-        // 由于Bukkit的限制，直接捕获命令输出比较困难
-        // 在实际实现中，可能需要使用反射或其他方法
     }
 }
