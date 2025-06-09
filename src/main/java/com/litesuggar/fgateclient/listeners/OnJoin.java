@@ -12,7 +12,6 @@ public class OnJoin implements Listener {
 
     public OnJoin(FGateClient plugin) {
         this.plugin = plugin;
-        plugin.getLogger().info("注册玩家加入事件监听器");
         this.webSocketManager = plugin.getWebSocketManager();
     }
 
