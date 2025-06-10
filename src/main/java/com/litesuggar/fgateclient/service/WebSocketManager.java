@@ -28,14 +28,13 @@ public class WebSocketManager {
     private final RequestDispatcher requestDispatcher;
     private final Gson gson = new Gson();
     private final Map<String, CompletableFuture<JsonObject>> pendingRequests = new ConcurrentHashMap<>();
-
+    private final String clientVersion;
     private WebSocketClient client;
     private boolean connected = false;
     private String serverApiVersion;
-    private final String clientVersion;
 
     public WebSocketManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager,
-            RequestDispatcher requestDispatcher, String clientVersion) {
+                            RequestDispatcher requestDispatcher, String clientVersion) {
         this.logger = logger;
         this.foliaLib = foliaLib;
         this.configManager = configManager;
@@ -75,20 +74,6 @@ public class WebSocketManager {
         return connected && client != null && client.isOpen();
     }
 
-    public void sendPlayerJoinEvent(String playerName, String uuid, long timestamp) {
-        JsonObject params = new JsonObject();
-        params.addProperty("player", playerName);
-        params.addProperty("uuid", uuid);
-        params.addProperty("timestamp", timestamp);
-
-        JsonObject notification = new JsonObject();
-        notification.addProperty("jsonrpc", "2.0");
-        notification.addProperty("method", "player.join");
-        notification.add("params", params);
-
-        send(notification);
-    }
-
     public void sendResponse(String id, JsonObject result, String error) {
         JsonObject response = new JsonObject();
         response.addProperty("id", id);
@@ -106,7 +91,7 @@ public class WebSocketManager {
         send(response);
     }
 
-    private void send(JsonObject message) {
+    public void send(JsonObject message) {
         if (isConnected()) {
             client.send(gson.toJson(message));
         }
