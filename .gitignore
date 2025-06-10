@@ -128,3 +128,8 @@ dependency-reduced-pom.xml
 buildNumber.properties
 
 # Common working directory
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
