@@ -19,3 +19,6 @@ rcon:
   host: "localhost"
   port: 25575
   password: "your-rcon-password"
+
+# language: zh_CN
+# 语言，可能在后续做支持

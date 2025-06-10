@@ -74,11 +74,11 @@ public class FGateClient extends JavaPlugin {
     public static FGateClient getInstance() {
         return instance;
     }
-
+/*
     public ConfigManager getConfigManager() {
         return configManager;
     }
-
+*/
     public ServiceManager getServiceManager() {
         return serviceManager;
     }
