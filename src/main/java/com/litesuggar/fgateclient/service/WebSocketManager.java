@@ -33,6 +33,7 @@ public class WebSocketManager {
     private WebSocketClient client;
     private boolean connected = false;
     private String serverApiVersion;
+    private boolean is_trying = false;
 
     public WebSocketManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager,
                             RequestDispatcher requestDispatcher, String clientVersion) {
@@ -48,9 +49,12 @@ public class WebSocketManager {
     }
 
     private void waitForConnection( int timeout) {
+        this.is_trying  = true;
         Socket socket = client.getSocket();
         if (socket != null ) {
             if(socket.isConnected()){
+                this.is_trying = false;
+                this.connected = true;
                 logger.info("WebSocket 连接已建立");
                 return;
             }
@@ -59,8 +63,11 @@ public class WebSocketManager {
 
             if (timeout < 1) {
                 logger.warning("无法连接到 WebSocket 服务器");
+                this.is_trying = false;
             } else {
-                logger.info("正在等待 WebSocket 连接... (剩余尝试次数: " + timeout + ")");
+                if(timeout%2==0){
+                    logger.info("正在等待 WebSocket 连接...");
+                }
                 waitForConnection( timeout - 1);
             }
         }, 100L);
@@ -82,8 +89,9 @@ public class WebSocketManager {
         URI uri = new URI(wsUrl);
         client = createClient(uri, headers);
         client.connect();
-
-        waitForConnection();
+        if(client==null) {
+            waitForConnection();
+        }
     }
 
     public void disconnect() {
@@ -213,12 +221,14 @@ public class WebSocketManager {
             @Override
             public void onError(Exception ex) {
                 if (ex instanceof java.net.ConnectException) {
-                    logger.warning("连接失败（Connection refused），将尝试重连...");
+                    logger.warning("连接失败（"+ ex.getMessage()+"），将尝试重连...");
                 } else {
                     logger.log(Level.SEVERE, "WebSocket 连接错误", ex);
                 }
                 connected = false;
-                scheduleReconnect();
+                if(!is_trying){
+                    scheduleReconnect();
+                }
             }
         };
     }
