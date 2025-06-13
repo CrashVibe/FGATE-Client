@@ -89,9 +89,8 @@ public class WebSocketManager {
         URI uri = new URI(wsUrl);
         client = createClient(uri, headers);
         client.connect();
-        if(client==null) {
-            waitForConnection();
-        }
+        waitForConnection();
+
     }
 
     public void disconnect() {
