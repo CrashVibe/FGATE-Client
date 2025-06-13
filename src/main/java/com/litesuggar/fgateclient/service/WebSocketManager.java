@@ -9,6 +9,7 @@ import com.tcoded.folialib.FoliaLib;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.net.Socket;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +43,30 @@ public class WebSocketManager {
         this.clientVersion = clientVersion;
     }
 
+    private void waitForConnection() {
+        waitForConnection( 5);
+    }
+
+    private void waitForConnection( int timeout) {
+        Socket socket = client.getSocket();
+        if (socket != null ) {
+            if(socket.isConnected()){
+                logger.info("WebSocket 连接已建立");
+                return;
+            }
+        }
+        foliaLib.getScheduler().runLaterAsync(() -> {
+
+            if (timeout < 1) {
+                logger.warning("无法连接到 WebSocket 服务器");
+            } else {
+                logger.info("正在等待 WebSocket 连接... (剩余尝试次数: " + timeout + ")");
+                waitForConnection( timeout - 1);
+            }
+        }, 100L);
+
+    }
+
     public void connect() throws Exception {
         String wsUrl = configManager.getWebsocketUrl();
         String token = configManager.getWebsocketToken();
@@ -58,9 +83,7 @@ public class WebSocketManager {
         client = createClient(uri, headers);
         client.connect();
 
-        if (!client.isOpen()) {
-            logger.warning("WebSocket 连接超时");
-        }
+        waitForConnection();
     }
 
     public void disconnect() {
