@@ -11,7 +11,6 @@ import com.tcoded.folialib.FoliaLib;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
-import java.net.Socket;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +32,8 @@ public class WebSocketManager extends WebSocketClient {
     private final String clientVersion;
     private final WebSocketClient client;
     private boolean connected = false;
-    private boolean is_trying = false;
+    private int retryCount = 0;
+    // private boolean is_trying = false;
 
 
     public WebSocketManager(URI uri, String token) {
@@ -51,7 +51,13 @@ public class WebSocketManager extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshake) {
-        logger.info("正在与远程服务器交换信息: " + uri.toString());
+        logger.info("Exchange message: " + uri.toString());
+        String wsUrl = configManager.getWebsocketUrl();
+        String token = configManager.getWebsocketToken();
+
+        if (wsUrl == null || token == null) {
+            throw new IllegalArgumentException("WebSocket URL & Token cannot be null!");
+        }
     }
 
     @Override
@@ -85,52 +91,12 @@ public class WebSocketManager extends WebSocketClient {
             logger.log(Level.SEVERE, "WebSocket connect failed", ex);
         }
         connected = false;
-        if (!is_trying) {
+        retryCount += 1;
+        if (retryCount < 10) {
             scheduleReconnect();
+        } else if (retryCount == 10) {
+            logger.severe("Reach max retry count!Please restart your server for try again!");
         }
-    }
-
-    private void waitForConnection() {
-        waitForConnection(10);
-    }
-
-    private void waitForConnection(int timeout) {
-        this.is_trying = true;
-        foliaLib.getScheduler().runLaterAsync(() -> {
-
-            Socket socket = client.getSocket();
-            if (socket != null) {
-                if (socket.isConnected()) {
-                    this.is_trying = false;
-                    this.connected = true;
-                    logger.info("WebSocket has connected");
-
-                    return;
-                }
-            }
-            if (timeout < 1) {
-                logger.warning("Cannot reach WebSocket server.");
-
-                this.is_trying = false;
-            } else {
-                waitForConnection(timeout - 1);
-            }
-        }, 10L);
-
-    }
-
-    @Override
-    public void connect() {
-        String wsUrl = configManager.getWebsocketUrl();
-        String token = configManager.getWebsocketToken();
-
-        if (wsUrl == null || token == null) {
-            throw new IllegalArgumentException("WebSocket URL & Token cannot be null!");
-        }
-
-        super.connect();
-        waitForConnection();
-
     }
 
     public void disconnect() {
@@ -257,12 +223,19 @@ public class WebSocketManager extends WebSocketClient {
 
 
     private void scheduleReconnect() {
-        foliaLib.getScheduler().runLaterAsync(() -> {
+        String e = "unknown";
+        for (int i = 0; i < 10; i++) {
+
             try {
-                connect();
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Reconnect failed.", e);
+
+                foliaLib.getScheduler().runLaterAsync(this::reconnect, 100L);
+                return;
+            } catch (Exception exception) {
+                e = exception.getMessage();
+
             }
-        }, 10L);
+
+        }
+        logger.log(Level.SEVERE, "Reconnect failed!" + e);
     }
 }

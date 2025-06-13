@@ -72,11 +72,6 @@ public class FGateClient extends JavaPlugin {
                 new OnJoin(this));
     }
 
-    /*
-        public ConfigManager getConfigManager() {
-            return configManager;
-        }
-    */
     public ServiceManager getServiceManager() {
         return serviceManager;
     }
