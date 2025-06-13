@@ -122,6 +122,9 @@ public class WebSocketManager {
     }
 
     public void send(JsonObject message) {
+        if(configManager.getConfig().getBoolean("debug.enable")){
+            logger.info("发送消息: " + message);
+        }
         if (isConnected()) {
             client.send(gson.toJson(message));
         }
@@ -199,6 +202,9 @@ public class WebSocketManager {
 
             @Override
             public void onMessage(String message) {
+                if(configManager.getConfig().getBoolean("debug.enable")){
+                    logger.info("收到来自服务器的消息: " + message);
+                }
                 handleMessage(message);
             }
 

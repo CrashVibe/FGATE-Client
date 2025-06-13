@@ -1,5 +1,7 @@
 # RemoteClient Plugin Configuration
-
+debug:
+  enable: false
+  #  调试模式，开启后将打印所有请求和响应
 # WebSocket连接配置
 websocket:
   # WebSocket服务器地址
