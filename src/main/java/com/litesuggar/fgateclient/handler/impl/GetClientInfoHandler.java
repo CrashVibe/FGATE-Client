@@ -16,6 +16,7 @@ public class GetClientInfoHandler extends RequestHandler {
 
     private final RconManager rconManager;
     Logger logger = FGateClient.getInstance().getLogger();
+
     public GetClientInfoHandler(WebSocketManager webSocketManager, RconManager rconManager) {
         super(webSocketManager);
         this.rconManager = rconManager;

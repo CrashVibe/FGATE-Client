@@ -13,11 +13,14 @@ import java.util.logging.Logger;
 
 public class FGateClient extends JavaPlugin {
 
+    private static FGateClient instance;
     public final FoliaLib foliaLib = new FoliaLib(this);
     public final Logger logger = getLogger();
-    private static FGateClient instance;
-
     private ServiceManager serviceManager;
+
+    public static FGateClient getInstance() {
+        return instance;
+    }
 
     @Override
     public void onLoad() {
@@ -69,14 +72,11 @@ public class FGateClient extends JavaPlugin {
                 new OnJoin(this));
     }
 
-    public static FGateClient getInstance() {
-        return instance;
-    }
-/*
-    public ConfigManager getConfigManager() {
-        return configManager;
-    }
-*/
+    /*
+        public ConfigManager getConfigManager() {
+            return configManager;
+        }
+    */
     public ServiceManager getServiceManager() {
         return serviceManager;
     }

@@ -30,13 +30,13 @@ public class WebSocketManager extends WebSocketClient {
     private final ConfigManager configManager = ServiceManager.getInstance().getConfigManager();
     private final RequestDispatcher requestDispatcher = ServiceManager.getInstance().getRequestDispatcher();
     private final Map<String, CompletableFuture<JsonObject>> pendingRequests = new ConcurrentHashMap<>();
-    private final String clientVersion ;
+    private final String clientVersion;
     private final WebSocketClient client;
     private boolean connected = false;
     private boolean is_trying = false;
 
 
-    public WebSocketManager(URI uri,  String token) {
+    public WebSocketManager(URI uri, String token) {
 
         super(uri, new HashMap<>() {{
             put("Authorization", "Bearer " + token);
@@ -48,46 +48,47 @@ public class WebSocketManager extends WebSocketClient {
         this.clientVersion = ServiceManager.getInstance().getClientVersion();
         this.client = this;
     }
-        @Override
-        public void onOpen(ServerHandshake handshake) {
-            logger.info("正在与远程服务器交换信息: " + uri.toString());
+
+    @Override
+    public void onOpen(ServerHandshake handshake) {
+        logger.info("正在与远程服务器交换信息: " + uri.toString());
+    }
+
+    @Override
+    public void onMessage(String message) {
+        if (configManager.getConfig().getBoolean("debug.enable")) {
+            logger.info("收到来自服务器的消息: " + message);
+        }
+        handleMessage(message);
+    }
+
+    @Override
+    public void onClose(int code, String reason, boolean remote) {
+        connected = false;
+        if (code == 1000 || code == 1006) {
+            if (reason.isEmpty()) {
+                reason = "Connection closed.";
+            }
+            logger.warning("Connection has closed because " + reason + " (Code: " + code + ")");
         }
 
-        @Override
-        public void onMessage(String message) {
-            if (configManager.getConfig().getBoolean("debug.enable")) {
-                logger.info("收到来自服务器的消息: " + message);
-            }
-            handleMessage(message);
+        if (remote) {
+            scheduleReconnect();
         }
+    }
 
-        @Override
-        public void onClose(int code, String reason, boolean remote) {
-            connected = false;
-            if (code == 1000 || code == 1006) {
-                if (reason.isEmpty()) {
-                    reason = "Connection closed.";
-                }
-                logger.warning("Connection has closed because " + reason + " (Code: " + code + ")");
-            }
-
-            if (remote) {
-                scheduleReconnect();
-            }
+    @Override
+    public void onError(Exception ex) {
+        if (ex instanceof java.net.ConnectException) {
+            logger.warning("Connect failed(" + ex.getMessage() + ")Trying to connect again.....");
+        } else {
+            logger.log(Level.SEVERE, "WebSocket connect failed", ex);
         }
-
-        @Override
-        public void onError(Exception ex) {
-            if (ex instanceof java.net.ConnectException) {
-                logger.warning("Connect failed(" + ex.getMessage() + ")Trying to connect again.....");
-            } else {
-                logger.log(Level.SEVERE, "WebSocket connect failed", ex);
-            }
-            connected = false;
-            if (!is_trying) {
-                scheduleReconnect();
-            }
+        connected = false;
+        if (!is_trying) {
+            scheduleReconnect();
         }
+    }
 
     private void waitForConnection() {
         waitForConnection(10);
@@ -117,6 +118,7 @@ public class WebSocketManager extends WebSocketClient {
         }, 10L);
 
     }
+
     @Override
     public void connect() {
         String wsUrl = configManager.getWebsocketUrl();
@@ -252,7 +254,6 @@ public class WebSocketManager extends WebSocketClient {
 
         return 0;
     }
-
 
 
     private void scheduleReconnect() {

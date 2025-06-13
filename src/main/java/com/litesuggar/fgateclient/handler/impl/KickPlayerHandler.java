@@ -8,7 +8,7 @@ import com.litesuggar.fgateclient.service.WebSocketManager;
 /**
  * 踢出玩家请求处理器
  */
-public class  KickPlayerHandler extends RequestHandler {
+public class KickPlayerHandler extends RequestHandler {
 
     private final PlayerManager playerManager;
 

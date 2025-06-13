@@ -31,7 +31,7 @@ public class PlayerManager {
                     logger.info("Kicked player " + player.getName() + " for: " + reason);
                 });
             } else {
-                logger.warning("Who is player '" + playerIdentifier+"'?");
+                logger.warning("Who is player '" + playerIdentifier + "'?");
             }
         });
     }

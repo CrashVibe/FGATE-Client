@@ -5,10 +5,13 @@ import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -71,16 +74,16 @@ public class RconManager {
         CompletableFuture<String> future = new CompletableFuture<>();
 
         foliaLib.getScheduler().runAsync(task -> {
-            foliaLib.getScheduler().runNextTick(task1 -> {
-                try {
-                    ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
-                    boolean success = Bukkit.dispatchCommand(consoleSender, command);
-                    String output = success ? "Success" : "Failed";
-                    future.complete(output);
-                } catch (Exception e) {
-                    future.completeExceptionally(e);
-                }
-            });
+
+            try {
+                ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
+                boolean success = Bukkit.dispatchCommand(consoleSender, command);
+                String output = success ? "Success" : "Failed";
+                future.complete(output);
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+
         });
 
         return future.get(10, TimeUnit.SECONDS);
@@ -132,7 +135,7 @@ public class RconManager {
     }
 
     private void sendRconPacket(int id, int type, String body) throws IOException {
-        byte[] bodyBytes = body.getBytes("UTF-8");
+        byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
         int length = 4 + 4 + bodyBytes.length + 2; // id + type + body + 2 null bytes
 
         ByteBuffer buffer = ByteBuffer.allocate(4 + length);
@@ -169,7 +172,7 @@ public class RconManager {
         byte[] bodyBytes = new byte[length - 10]; // length - id - type - 2 null bytes
         packetBuffer.get(bodyBytes);
 
-        String body = new String(bodyBytes, "UTF-8").trim();
+        String body = new String(bodyBytes, StandardCharsets.UTF_8).trim();
 
         return new RconPacket(id, type, body);
     }

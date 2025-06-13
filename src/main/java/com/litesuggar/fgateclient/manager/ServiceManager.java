@@ -19,17 +19,17 @@ import java.util.logging.Logger;
  */
 public class ServiceManager {
 
+    private static ServiceManager instance;
     private final Logger logger;
     private final FoliaLib foliaLib;
     private final ConfigManager configManager;
-    private String clientVersion = "0.0.1";
-
+    private final String clientVersion;
     // 服务实例
     private RconManager rconManager;
     private PlayerManager playerManager;
     private WebSocketManager webSocketManager;
     private RequestDispatcher requestDispatcher;
-    private static ServiceManager instance;
+
     public ServiceManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager, String clientVersion) {
         this.logger = logger;
         this.foliaLib = foliaLib;
@@ -37,6 +37,10 @@ public class ServiceManager {
         this.clientVersion = clientVersion;
         instance = this;
         initializeServices();
+    }
+
+    public static ServiceManager getInstance() {
+        return instance;
     }
 
     private void initializeServices() {
@@ -49,7 +53,7 @@ public class ServiceManager {
 
         // 初始化 WebSocket 服务
         try {
-            webSocketManager = new WebSocketManager(new URI(configManager.getWebsocketUrl()),  configManager.getWebsocketToken());
+            webSocketManager = new WebSocketManager(new URI(configManager.getWebsocketUrl()), configManager.getWebsocketToken());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -70,7 +74,7 @@ public class ServiceManager {
     /**
      * 启动所有服务
      */
-    public void startServices() throws Exception {
+    public void startServices() {
         logger.info("Starting services......");
 
         // 验证配置
@@ -103,12 +107,11 @@ public class ServiceManager {
     public RconManager getRconManager() {
         return rconManager;
     }
+
     public ConfigManager getConfigManager() {
         return configManager;
     }
-    public static ServiceManager getInstance() {
-        return instance;
-    }
+
     public PlayerManager getPlayerManager() {
         return playerManager;
     }
@@ -116,6 +119,7 @@ public class ServiceManager {
     public WebSocketManager getWebSocketManager() {
         return webSocketManager;
     }
+
     public FoliaLib getFoliaLib() {
         return foliaLib;
     }
@@ -123,6 +127,7 @@ public class ServiceManager {
     public RequestDispatcher getRequestDispatcher() {
         return requestDispatcher;
     }
+
     public String getClientVersion() {
         return clientVersion;
     }
