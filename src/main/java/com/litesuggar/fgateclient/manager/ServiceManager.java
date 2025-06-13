@@ -93,7 +93,7 @@ public class ServiceManager {
         logger.info("Stopping services......");
 
         if (webSocketManager != null) {
-            webSocketManager.disconnect();
+            webSocketManager.close(1001);
         }
 
         if (rconManager != null) {
