@@ -10,6 +10,8 @@ import com.litesuggar.fgateclient.service.RconManager;
 import com.litesuggar.fgateclient.service.WebSocketManager;
 import com.tcoded.folialib.FoliaLib;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Logger;
 
 /**
@@ -20,20 +22,20 @@ public class ServiceManager {
     private final Logger logger;
     private final FoliaLib foliaLib;
     private final ConfigManager configManager;
-    private final String clientVersion;
+    private String clientVersion = "0.0.1";
 
     // 服务实例
     private RconManager rconManager;
     private PlayerManager playerManager;
     private WebSocketManager webSocketManager;
     private RequestDispatcher requestDispatcher;
-
+    private static ServiceManager instance;
     public ServiceManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager, String clientVersion) {
         this.logger = logger;
         this.foliaLib = foliaLib;
         this.configManager = configManager;
         this.clientVersion = clientVersion;
-
+        instance = this;
         initializeServices();
     }
 
@@ -46,25 +48,30 @@ public class ServiceManager {
         requestDispatcher = new RequestDispatcher(logger, foliaLib);
 
         // 初始化 WebSocket 服务
-        webSocketManager = new WebSocketManager(logger, foliaLib, configManager, requestDispatcher, clientVersion);
+        try {
+            webSocketManager = new WebSocketManager(new URI(configManager.getWebsocketUrl()),  configManager.getWebsocketToken());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
 
         // 注册请求处理器
         registerHandlers();
 
-        logger.info("服务管理器初始化完成，共注册了 " + requestDispatcher.getHandlerCount() + " 个请求处理器");
+        logger.info("Init done, " + requestDispatcher.getHandlerCount() + " handlers has been enabled");
     }
 
     private void registerHandlers() {
-        requestDispatcher.registerHandler(new GetClientInfoHandler(webSocketManager, rconManager));
-        requestDispatcher.registerHandler(new ExecuteRconHandler(webSocketManager, rconManager));
-        requestDispatcher.registerHandler(new KickPlayerHandler(webSocketManager, playerManager));
+        requestDispatcher
+                .registerHandler(new GetClientInfoHandler(webSocketManager, rconManager))
+                .registerHandler(new ExecuteRconHandler(webSocketManager, rconManager))
+                .registerHandler(new KickPlayerHandler(webSocketManager, playerManager));
     }
 
     /**
      * 启动所有服务
      */
     public void startServices() throws Exception {
-        logger.info("正在启动服务...");
+        logger.info("Starting services......");
 
         // 验证配置
         configManager.validateConfig();
@@ -72,14 +79,14 @@ public class ServiceManager {
         // 连接 WebSocket
         webSocketManager.connect();
 
-        logger.info("所有服务启动完成");
+        logger.info("Done!");
     }
 
     /**
      * 停止所有服务
      */
     public void stopServices() {
-        logger.info("正在停止服务...");
+        logger.info("Stopping services......");
 
         if (webSocketManager != null) {
             webSocketManager.disconnect();
@@ -89,14 +96,19 @@ public class ServiceManager {
             rconManager.close();
         }
 
-        logger.info("所有服务已停止");
+        logger.info("ALL SERVICES HAS STOPPED");
     }
 
     // Getter 方法
     public RconManager getRconManager() {
         return rconManager;
     }
-
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+    public static ServiceManager getInstance() {
+        return instance;
+    }
     public PlayerManager getPlayerManager() {
         return playerManager;
     }
@@ -104,8 +116,14 @@ public class ServiceManager {
     public WebSocketManager getWebSocketManager() {
         return webSocketManager;
     }
+    public FoliaLib getFoliaLib() {
+        return foliaLib;
+    }
 
     public RequestDispatcher getRequestDispatcher() {
         return requestDispatcher;
+    }
+    public String getClientVersion() {
+        return clientVersion;
     }
 }

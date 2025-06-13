@@ -25,9 +25,10 @@ public class RequestDispatcher {
     /**
      * 注册请求处理器
      */
-    public void registerHandler(RequestHandler handler) {
+    public RequestDispatcher registerHandler(RequestHandler handler) {
         handlers.put(handler.getMethod(), handler);
-        logger.info("注册请求处理器: " + handler.getMethod());
+        logger.info("Reg method: " + handler.getMethod());
+        return this;
     }
 
     /**
@@ -36,7 +37,7 @@ public class RequestDispatcher {
     public void dispatch(String method, JsonObject request) {
         RequestHandler handler = handlers.get(method);
         if (handler == null) {
-            logger.warning("未知的请求方法: " + method);
+            logger.warning("Unknow method: " + method);
             return;
         }
 
@@ -45,7 +46,7 @@ public class RequestDispatcher {
             try {
                 handler.handle(request);
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "处理请求时发生错误: " + method, e);
+                logger.log(Level.SEVERE, "ERROR: " + method, e);
             }
         });
     }

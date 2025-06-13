@@ -28,10 +28,10 @@ public class PlayerManager {
                 // 在主线程执行踢出操作
                 foliaLib.getScheduler().runNextTick(kickTask -> {
                     player.kick(net.kyori.adventure.text.Component.text(reason));
-                    logger.info("踢出玩家 " + player.getName() + " 原因: " + reason);
+                    logger.info("Kicked player " + player.getName() + " for: " + reason);
                 });
             } else {
-                logger.warning("找不到在线玩家: " + playerIdentifier);
+                logger.warning("Who is player '" + playerIdentifier+"'?");
             }
         });
     }

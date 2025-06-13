@@ -2,6 +2,7 @@ package com.litesuggar.fgateclient.handler;
 
 import com.google.gson.JsonObject;
 import com.litesuggar.fgateclient.service.WebSocketManager;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * WebSocket 请求处理器基类
@@ -58,6 +59,7 @@ public abstract class RequestHandler {
     /**
      * 获取请求ID
      */
+    @Nullable
     protected String getRequestId(JsonObject request) {
         return request.has("id") ? request.get("id").getAsString() : null;
     }
@@ -65,6 +67,7 @@ public abstract class RequestHandler {
     /**
      * 获取请求参数
      */
+    @Nullable
     protected JsonObject getParams(JsonObject request) {
         return request.has("params") ? request.getAsJsonObject("params") : null;
     }

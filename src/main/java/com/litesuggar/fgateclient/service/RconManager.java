@@ -61,7 +61,7 @@ public class RconManager {
             try {
                 rconSocket.close();
             } catch (IOException e) {
-                logger.log(Level.WARNING, "关闭 RCON 连接时出错", e);
+                logger.log(Level.WARNING, "Fail to close RCON connection", e);
             }
         }
         rconConnected = false;
@@ -75,7 +75,7 @@ public class RconManager {
                 try {
                     ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
                     boolean success = Bukkit.dispatchCommand(consoleSender, command);
-                    String output = success ? "命令执行成功" : "命令执行失败";
+                    String output = success ? "Success" : "Failed";
                     future.complete(output);
                 } catch (Exception e) {
                     future.completeExceptionally(e);
@@ -88,7 +88,7 @@ public class RconManager {
 
     private String executeExternalRconCommand(String command) throws Exception {
         if (!rconConnected) {
-            throw new Exception("RCON 未连接");
+            throw new Exception("RCON hasn't connected yet!");
         }
 
         synchronized (this) {
@@ -101,7 +101,7 @@ public class RconManager {
             RconPacket response = readRconPacket();
 
             if (response.id != id) {
-                throw new Exception("RCON 响应 ID 不匹配");
+                throw new Exception("Response id error.");
             }
 
             return response.body;
@@ -119,14 +119,14 @@ public class RconManager {
             RconPacket authResponse = readRconPacket();
 
             if (authResponse.id == -1) {
-                throw new Exception("RCON 认证失败");
+                throw new Exception("RCON auth failed");
             }
 
             rconConnected = true;
-            logger.info("外部 RCON 连接成功");
+            logger.info("Remote RCON server connected");
 
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "连接外部 RCON 失败", e);
+            logger.log(Level.SEVERE, "Fail to connect remote RCON server!", e);
             rconConnected = false;
         }
     }

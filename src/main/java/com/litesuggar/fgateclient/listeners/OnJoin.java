@@ -34,7 +34,7 @@ public class OnJoin implements Listener {
             try {
                 WebSocketManager webSocketManager = plugin.getServiceManager().getWebSocketManager();
                 if (webSocketManager != null && webSocketManager.isConnected()) {
-                    plugin.getLogger().info("发送玩家加入事件: " + event.getPlayer().getName());
+                    plugin.getLogger().info("Sending player join event: " + event.getPlayer().getName());
                     this.sendPlayerJoinEvent(
                             webSocketManager,
                             event.getPlayer().getName(),
@@ -42,7 +42,7 @@ public class OnJoin implements Listener {
                             System.currentTimeMillis());
                 }
             } catch (Exception e) {
-                plugin.getLogger().warning("发送玩家加入事件失败：" + e.getMessage());
+                plugin.getLogger().warning("Failed to send player join event：" + e.getMessage());
             }
         });
     }

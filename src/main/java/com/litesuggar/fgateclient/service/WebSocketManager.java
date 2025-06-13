@@ -1,10 +1,12 @@
 package com.litesuggar.fgateclient.service;
 
-import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.litesuggar.fgateclient.FGateClient;
 import com.litesuggar.fgateclient.config.ConfigManager;
 import com.litesuggar.fgateclient.handler.RequestDispatcher;
+import com.litesuggar.fgateclient.manager.ServiceManager;
 import com.tcoded.folialib.FoliaLib;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -21,74 +23,110 @@ import java.util.logging.Logger;
 /**
  * WebSocket 管理器 - 负责WebSocket连接和消息处理
  */
-public class WebSocketManager {
+public class WebSocketManager extends WebSocketClient {
 
-    private final Logger logger;
-    private final FoliaLib foliaLib;
-    private final ConfigManager configManager;
-    private final RequestDispatcher requestDispatcher;
-    private final Gson gson = new Gson();
+    private final Logger logger = FGateClient.getInstance().logger;
+    private final FoliaLib foliaLib = ServiceManager.getInstance().getFoliaLib();
+    private final ConfigManager configManager = ServiceManager.getInstance().getConfigManager();
+    private final RequestDispatcher requestDispatcher = ServiceManager.getInstance().getRequestDispatcher();
     private final Map<String, CompletableFuture<JsonObject>> pendingRequests = new ConcurrentHashMap<>();
-    private final String clientVersion;
-    private WebSocketClient client;
+    private final String clientVersion ;
+    private final WebSocketClient client;
     private boolean connected = false;
-    private String serverApiVersion;
     private boolean is_trying = false;
 
-    public WebSocketManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager,
-                            RequestDispatcher requestDispatcher, String clientVersion) {
-        this.logger = logger;
-        this.foliaLib = foliaLib;
-        this.configManager = configManager;
-        this.requestDispatcher = requestDispatcher;
-        this.clientVersion = clientVersion;
-    }
 
-    private void waitForConnection() {
-        waitForConnection( 5);
-    }
+    public WebSocketManager(URI uri,  String token) {
 
-    private void waitForConnection( int timeout) {
-        this.is_trying  = true;
-        Socket socket = client.getSocket();
-        if (socket != null ) {
-            if(socket.isConnected()){
-                this.is_trying = false;
-                this.connected = true;
-                logger.info("WebSocket 连接已建立");
-                return;
+        super(uri, new HashMap<>() {{
+            put("Authorization", "Bearer " + token);
+            put("X-API-Version", ServiceManager.getInstance().getClientVersion());
+        }});
+
+
+        this.uri = uri;
+        this.clientVersion = ServiceManager.getInstance().getClientVersion();
+        this.client = this;
+    }
+        @Override
+        public void onOpen(ServerHandshake handshake) {
+            logger.info("正在与远程服务器交换信息: " + uri.toString());
+        }
+
+        @Override
+        public void onMessage(String message) {
+            if (configManager.getConfig().getBoolean("debug.enable")) {
+                logger.info("收到来自服务器的消息: " + message);
+            }
+            handleMessage(message);
+        }
+
+        @Override
+        public void onClose(int code, String reason, boolean remote) {
+            connected = false;
+            if (code == 1000 || code == 1006) {
+                if (reason.isEmpty()) {
+                    reason = "Connection closed.";
+                }
+                logger.warning("Connection has closed because " + reason + " (Code: " + code + ")");
+            }
+
+            if (remote) {
+                scheduleReconnect();
             }
         }
-        foliaLib.getScheduler().runLaterAsync(() -> {
 
-            if (timeout < 1) {
-                logger.warning("无法连接到 WebSocket 服务器");
-                this.is_trying = false;
+        @Override
+        public void onError(Exception ex) {
+            if (ex instanceof java.net.ConnectException) {
+                logger.warning("Connect failed(" + ex.getMessage() + ")Trying to connect again.....");
             } else {
-                if(timeout%2==0){
-                    logger.info("正在等待 WebSocket 连接...");
-                }
-                waitForConnection( timeout - 1);
+                logger.log(Level.SEVERE, "WebSocket connect failed", ex);
             }
-        }, 100L);
+            connected = false;
+            if (!is_trying) {
+                scheduleReconnect();
+            }
+        }
 
+    private void waitForConnection() {
+        waitForConnection(10);
     }
 
-    public void connect() throws Exception {
+    private void waitForConnection(int timeout) {
+        this.is_trying = true;
+        foliaLib.getScheduler().runLaterAsync(() -> {
+
+            Socket socket = client.getSocket();
+            if (socket != null) {
+                if (socket.isConnected()) {
+                    this.is_trying = false;
+                    this.connected = true;
+                    logger.info("WebSocket has connected");
+
+                    return;
+                }
+            }
+            if (timeout < 1) {
+                logger.warning("Cannot reach WebSocket server.");
+
+                this.is_trying = false;
+            } else {
+                waitForConnection(timeout - 1);
+            }
+        }, 10L);
+
+    }
+    @Override
+    public void connect() {
         String wsUrl = configManager.getWebsocketUrl();
         String token = configManager.getWebsocketToken();
 
         if (wsUrl == null || token == null) {
-            throw new IllegalArgumentException("WebSocket URL 和 Token 必须配置");
+            throw new IllegalArgumentException("WebSocket URL & Token cannot be null!");
         }
 
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "Bearer " + token);
-        headers.put("X-API-Version", clientVersion);
-
-        URI uri = new URI(wsUrl);
-        client = createClient(uri, headers);
-        client.connect();
+        super.connect();
         waitForConnection();
 
     }
@@ -122,18 +160,16 @@ public class WebSocketManager {
     }
 
     public void send(JsonObject message) {
-        if(configManager.getConfig().getBoolean("debug.enable")){
-            logger.info("发送消息: " + message);
+        if (configManager.getConfig().getBoolean("debug.enable")) {
+            logger.info("Send message: " + message);
         }
         if (isConnected()) {
-            client.send(gson.toJson(message));
+            client.send(message.toString());
         }
     }
 
-    private void handleMessage(String message) {
+    private void processMessage(JsonObject json) {
         try {
-            JsonObject json = JsonParser.parseString(message).getAsJsonObject();
-
             if (json.has("type")) {
                 handleSystemMessage(json);
             } else if (json.has("method")) {
@@ -143,26 +179,50 @@ public class WebSocketManager {
                 handleResponse(json);
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "处理 WebSocket 消息时出错: " + message, e);
+            logger.log(Level.SEVERE, "Something wrong while processing WebSocket: " + json.toString(), e);
         }
+    }
+
+    private void processMessage(JsonArray array) {
+        for (int i = 0; i < array.size(); i++) {
+            var json = array.get(i).getAsJsonObject();
+            foliaLib.getScheduler().runAsync(task -> processMessage(json));
+
+        }
+    }
+
+    private void handleMessage(String message) {
+        try {
+            JsonObject json = JsonParser.parseString(message).getAsJsonObject();
+            foliaLib.getScheduler().runAsync(task -> processMessage(json));
+        } catch (Exception e) {
+            try {
+                JsonArray json = JsonParser.parseString(message).getAsJsonArray();
+                processMessage(json);
+
+            } catch (Exception e2) {
+                throw new RuntimeException("Message received is not a json object or a json array!");
+            }
+        }
+
     }
 
     private void handleSystemMessage(JsonObject json) {
         String type = json.get("type").getAsString();
         if ("welcome".equals(type)) {
             String welcomeMsg = json.get("message").getAsString();
-            serverApiVersion = json.has("api_version") ? json.get("api_version").getAsString() : "unknown";
+            String serverApiVersion = json.has("api_version") ? json.get("api_version").getAsString() : "unknown";
 
             if (serverApiVersion != null && compareVersions(serverApiVersion, clientVersion) < 0) {
-                logger.warning("服务器 API 版本 " + serverApiVersion +
-                        " 低于所需版本 " + clientVersion + "。正在关闭连接。");
+                logger.warning("Server API version " + serverApiVersion +
+                        " OOPS!Server API version is too low!I am on " + clientVersion + ".Closing connection......");
                 client.close();
                 return;
             }
 
-            logger.info("🎉 服务器欢迎消息: " + welcomeMsg + " (API v" + serverApiVersion + ")");
+            logger.info("🎉 Server welcome message: " + welcomeMsg + " (API v" + serverApiVersion + ")");
             connected = true;
-            logger.info("服务器 API 版本检查通过。版本: " + serverApiVersion);
+            logger.info("API check passed: " + serverApiVersion);
         }
     }
 
@@ -193,58 +253,15 @@ public class WebSocketManager {
         return 0;
     }
 
-    private WebSocketClient createClient(URI uri, Map<String, String> headers) {
-        return new WebSocketClient(uri, headers) {
-            @Override
-            public void onOpen(ServerHandshake handshake) {
-                logger.info("正在与远程服务器交换信息: " + uri);
-            }
 
-            @Override
-            public void onMessage(String message) {
-                if(configManager.getConfig().getBoolean("debug.enable")){
-                    logger.info("收到来自服务器的消息: " + message);
-                }
-                handleMessage(message);
-            }
-
-            @Override
-            public void onClose(int code, String reason, boolean remote) {
-                connected = false;
-                if (code == 1000 || code == 1006) {
-                    if (reason.isEmpty()) {
-                        reason = "正常关闭";
-                    }
-                    logger.warning("连接关闭了: " + reason + " (Code: " + code + ")");
-                }
-
-                if (remote) {
-                    scheduleReconnect();
-                }
-            }
-
-            @Override
-            public void onError(Exception ex) {
-                if (ex instanceof java.net.ConnectException) {
-                    logger.warning("连接失败（"+ ex.getMessage()+"），将尝试重连...");
-                } else {
-                    logger.log(Level.SEVERE, "WebSocket 连接错误", ex);
-                }
-                connected = false;
-                if(!is_trying){
-                    scheduleReconnect();
-                }
-            }
-        };
-    }
 
     private void scheduleReconnect() {
         foliaLib.getScheduler().runLaterAsync(() -> {
             try {
                 connect();
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "重连失败", e);
+                logger.log(Level.SEVERE, "Reconnect failed.", e);
             }
-        }, 100L);
+        }, 10L);
     }
 }

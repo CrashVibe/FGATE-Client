@@ -31,7 +31,7 @@ public class  KickPlayerHandler extends RequestHandler {
         JsonObject params = request.getAsJsonObject("params");
         String playerIdentifier = params.has("player") ? params.get("player").getAsString()
                 : params.has("uuid") ? params.get("uuid").getAsString() : null;
-        String reason = params.has("reason") ? params.get("reason").getAsString() : "您已被踢出服务器";
+        String reason = params.has("reason") ? params.get("reason").getAsString() : "You are kicked from this server.";
 
         if (playerIdentifier != null) {
             playerManager.kickPlayer(playerIdentifier, reason);

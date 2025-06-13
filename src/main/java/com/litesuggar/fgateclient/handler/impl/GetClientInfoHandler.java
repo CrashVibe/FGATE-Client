@@ -1,10 +1,13 @@
 package com.litesuggar.fgateclient.handler.impl;
 
 import com.google.gson.JsonObject;
+import com.litesuggar.fgateclient.FGateClient;
 import com.litesuggar.fgateclient.handler.RequestHandler;
 import com.litesuggar.fgateclient.service.RconManager;
 import com.litesuggar.fgateclient.service.WebSocketManager;
 import org.bukkit.Bukkit;
+
+import java.util.logging.Logger;
 
 /**
  * 获取客户端信息请求处理器
@@ -12,7 +15,7 @@ import org.bukkit.Bukkit;
 public class GetClientInfoHandler extends RequestHandler {
 
     private final RconManager rconManager;
-
+    Logger logger = FGateClient.getInstance().getLogger();
     public GetClientInfoHandler(WebSocketManager webSocketManager, RconManager rconManager) {
         super(webSocketManager);
         this.rconManager = rconManager;
@@ -26,7 +29,9 @@ public class GetClientInfoHandler extends RequestHandler {
     @Override
     public void handle(JsonObject request) {
         String requestId = getRequestId(request);
+        logger.info("Received request: " + request);
         if (requestId == null) {
+            logger.warning("Missed request id!");
             return; // 无效请求ID
         }
 
@@ -43,7 +48,7 @@ public class GetClientInfoHandler extends RequestHandler {
             sendSuccessResponse(requestId, result);
 
         } catch (Exception e) {
-            sendErrorResponse(requestId, "获取客户端信息失败: " + e.getMessage());
+            sendErrorResponse(requestId, "Fail to send client info: " + e.getMessage());
         }
     }
 }

@@ -44,13 +44,13 @@ public class ConfigManager {
 
     public void validateConfig() throws IllegalArgumentException {
         if (websocketUrl == null || websocketUrl.trim().isEmpty()) {
-            throw new IllegalArgumentException("WebSocket URL 不能为空");
+            throw new IllegalArgumentException("WebSocket URL can't be null!");
         }
         if (websocketToken == null || websocketToken.trim().isEmpty()) {
-            throw new IllegalArgumentException("WebSocket Token 不能为空");
+            throw new IllegalArgumentException("WebSocket Token can't be null!");
         }
         if (!useBuiltinRcon && (rconPassword == null || rconPassword.trim().isEmpty())) {
-            throw new IllegalArgumentException("外部 RCON 密码不能为空");
+            throw new IllegalArgumentException("Remote RCON token can't be null!");
         }
     }
 

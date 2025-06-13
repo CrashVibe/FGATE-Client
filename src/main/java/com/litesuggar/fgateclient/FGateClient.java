@@ -5,11 +5,11 @@ import com.litesuggar.fgateclient.listeners.OnJoin;
 import com.litesuggar.fgateclient.manager.ServiceManager;
 import com.litesuggar.fgateclient.utils.EventUtil;
 import com.tcoded.folialib.FoliaLib;
-import java.util.logging.Logger;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FGateClient extends JavaPlugin {
 
@@ -17,7 +17,6 @@ public class FGateClient extends JavaPlugin {
     public final Logger logger = getLogger();
     private static FGateClient instance;
 
-    private ConfigManager configManager;
     private ServiceManager serviceManager;
 
     @Override
@@ -30,7 +29,7 @@ public class FGateClient extends JavaPlugin {
     public void onEnable() {
         try {
             // 初始化配置管理器
-            configManager = new ConfigManager(this); // 初始化服务管理器
+            ConfigManager configManager = new ConfigManager(this); // 初始化服务管理器
             serviceManager = new ServiceManager(logger, foliaLib, configManager, getPluginMeta().getVersion());
 
             // 初始化 bStats
@@ -53,7 +52,7 @@ public class FGateClient extends JavaPlugin {
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Failed to enable plugin", e);
-            setEnabled(false);
+            getServer().getPluginManager().disablePlugin(this);
         }
     }
 
@@ -81,4 +80,5 @@ public class FGateClient extends JavaPlugin {
     public ServiceManager getServiceManager() {
         return serviceManager;
     }
+
 }

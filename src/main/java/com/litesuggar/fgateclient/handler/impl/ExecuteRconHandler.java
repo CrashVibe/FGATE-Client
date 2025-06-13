@@ -32,14 +32,15 @@ public class ExecuteRconHandler extends RequestHandler {
         try {
             JsonObject params = getParams(request);
             if (params == null || !params.has("command")) {
-                sendErrorResponse(requestId, "缺少必需的 'command' 参数");
+
+                sendErrorResponse(requestId, "Argument 'command' is required, but it's missing!");
                 return;
             }
 
             String command = params.get("command").getAsString();
 
             if (!rconManager.isAvailable()) {
-                sendErrorResponse(requestId, "RCON 服务不可用");
+                sendErrorResponse(requestId, "RCON service is unavailable.");
                 return;
             }
 
@@ -52,7 +53,7 @@ public class ExecuteRconHandler extends RequestHandler {
             sendSuccessResponse(requestId, result);
 
         } catch (Exception e) {
-            sendErrorResponse(requestId, "执行 RCON 命令失败: " + e.getMessage());
+            sendErrorResponse(requestId, "Fail to excuse RCON command because: " + e.getMessage());
         }
     }
 }
