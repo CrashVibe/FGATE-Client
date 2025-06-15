@@ -14,10 +14,11 @@ public class OnJoin implements Listener {
         this.plugin = plugin;
     }
 
-    private void sendPlayerJoinEvent(WebSocketManager ws, String playerName, String uuid, long timestamp) {
+    private void sendPlayerJoinEvent(WebSocketManager ws, String playerName, String uuid, String ip, long timestamp) {
         JsonObject params = new JsonObject();
         params.addProperty("player", playerName);
         params.addProperty("uuid", uuid);
+        params.addProperty("ip", ip);
         params.addProperty("timestamp", timestamp);
 
         JsonObject notification = new JsonObject();
@@ -35,10 +36,16 @@ public class OnJoin implements Listener {
                 WebSocketManager webSocketManager = plugin.getServiceManager().getWebSocketManager();
                 if (webSocketManager != null && webSocketManager.isConnected()) {
                     plugin.getLogger().info("Sending player join event: " + event.getPlayer().getName());
+
+                    String playerIP = event.getPlayer().getAddress() != null
+                            ? event.getPlayer().getAddress().getAddress().getHostAddress()
+                            : null;
+
                     this.sendPlayerJoinEvent(
                             webSocketManager,
                             event.getPlayer().getName(),
                             event.getPlayer().getUniqueId().toString(),
+                            playerIP,
                             System.currentTimeMillis());
                 }
             } catch (Exception e) {

@@ -1,5 +1,6 @@
 package com.litesuggar.fgateclient.service;
 
+import com.litesuggar.fgateclient.util.TextUtil;
 import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -27,7 +28,8 @@ public class PlayerManager {
             if (player != null && player.isOnline()) {
                 // 在主线程执行踢出操作
                 foliaLib.getScheduler().runNextTick(kickTask -> {
-                    player.kick(net.kyori.adventure.text.Component.text(reason));
+                    // 使用TextUtil解析颜色代码
+                    player.kick(TextUtil.parseText(reason));
                     logger.info("Kicked player " + player.getName() + " for: " + reason);
                 });
             } else {
