@@ -50,6 +50,48 @@ public class TextUtil {
             return parseMultilineText(text);
         }
 
+        // 如果是单行，直接解析
+        return parseSingleLineText(text);
+    }
+
+    /**
+     * 处理多行文本，每行单独解析以确保换行时颜色重置
+     */
+    private static Component parseMultilineText(String text) {
+        String[] lines = text.split("\n", -1); // -1 保留尾部空行
+
+        if (lines.length == 0) {
+            return Component.empty();
+        }
+
+        if (lines.length == 1) {
+            return parseSingleLineText(lines[0]);
+        }
+
+        Component result = Component.empty();
+
+        for (int i = 0; i < lines.length; i++) {
+            if (i > 0) {
+                result = result.append(Component.newline());
+            }
+
+            String line = lines[i];
+            if (!line.isEmpty()) {
+                result = result.append(parseSingleLineText(line));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 解析单行文本（不包含换行符）
+     */
+    private static Component parseSingleLineText(String text) {
+        if (text == null || text.isEmpty()) {
+            return Component.empty();
+        }
+
         // 首先处理十六进制颜色格式 &#RRGGBB
         text = convertHexColors(text);
 
@@ -82,36 +124,6 @@ public class TextUtil {
 
         // 如果都不包含特殊代码，返回纯文本
         return Component.text(text);
-    }
-
-    /**
-     * 处理多行文本，每行单独解析以确保换行时颜色重置
-     */
-    private static Component parseMultilineText(String text) {
-        String[] lines = text.split("\n", -1); // -1 保留尾部空行
-
-        if (lines.length == 0) {
-            return Component.empty();
-        }
-
-        if (lines.length == 1) {
-            return parseText(lines[0]);
-        }
-
-        Component result = Component.empty();
-
-        for (int i = 0; i < lines.length; i++) {
-            if (i > 0) {
-                result = result.append(Component.newline());
-            }
-
-            String line = lines[i];
-            if (!line.isEmpty()) {
-                result = result.append(parseText(line));
-            }
-        }
-
-        return result;
     }
 
     /**
