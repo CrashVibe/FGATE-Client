@@ -1,14 +1,13 @@
 package com.litesuggar.fgateclient.utils;
 
-import com.litesuggar.fgateclient.FGateClient;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class EventUtil {
 
-    public static void registerEvents(Listener... listeners) {
+    public static void registerEvents(JavaPlugin plugin, Listener... listeners) {
         for (Listener listener : listeners) {
-            FGateClient.getInstance().getServer().getPluginManager().registerEvents(listener,
-                    FGateClient.getInstance());
+            plugin.getServer().getPluginManager().registerEvents(listener, plugin);
         }
     }
 }

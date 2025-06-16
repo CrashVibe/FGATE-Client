@@ -4,10 +4,12 @@ import com.litesuggar.fgateclient.config.ConfigManager;
 import com.litesuggar.fgateclient.listeners.OnJoin;
 import com.litesuggar.fgateclient.manager.ServiceManager;
 import com.litesuggar.fgateclient.utils.EventUtil;
+import com.litesuggar.fgateclient.utils.I18n;
 import com.tcoded.folialib.FoliaLib;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,45 +32,84 @@ public class FGateClient extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        try {
-            // 初始化配置管理器
-            ConfigManager configManager = new ConfigManager(this); // 初始化服务管理器
-            serviceManager = new ServiceManager(logger, foliaLib, configManager, getPluginMeta().getVersion());
+        // 异步初始化插件，避免阻塞服务器启动
+        CompletableFuture.runAsync(() -> {
+            try {
+                // 异步加载配置文件
+                saveDefaultConfig();
+                reloadConfig();
+                
+                logger.info("Configuration loaded, initializing services...");
+                
+                // 异步创建服务管理器
+                serviceManager = new ServiceManager(logger, foliaLib, new ConfigManager(this), 
+                    getPluginMeta().getVersion(), new I18n(getDataFolder()));
 
-            // 初始化 bStats
-            new Metrics(this, 26085);
-            logger.info("bStats Hook Enabled!");
+                // 初始化 bStats
+                new Metrics(this, 26085);
+                logger.info("bStats Hook Enabled!");
 
-            // 注册事件监听器
-            initListeners();
+                // 在主线程注册事件监听器（必须在主线程）
+                getServer().getScheduler().runTask(this, () -> {
+                    initListeners();
+                });
 
-            // 异步启动服务
-            foliaLib.getScheduler().runAsync(task -> {
-                try {
-                    serviceManager.startServices();
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, "Failed to start services", e);
-                }
-            });
+                // 异步启动服务
+                serviceManager.startServicesAsync()
+                    .thenRun(() -> {
+                        logger.info("FGateClient plugin enabled successfully!");
+                    })
+                    .exceptionally(throwable -> {
+                        logger.log(Level.SEVERE, "Failed to start services", throwable);
+                        // 在主线程禁用插件
+                        getServer().getScheduler().runTask(this, () -> {
+                            getServer().getPluginManager().disablePlugin(this);
+                        });
+                        return null;
+                    });
 
-            logger.info("FGateClient plugin enabled successfully!");
-
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to enable plugin", e);
-            getServer().getPluginManager().disablePlugin(this);
-        }
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed to enable plugin", e);
+                // 在主线程禁用插件
+                getServer().getScheduler().runTask(this, () -> {
+                    getServer().getPluginManager().disablePlugin(this);
+                });
+            }
+        }).exceptionally(throwable -> {
+            logger.log(Level.SEVERE, "Failed to initialize plugin asynchronously", throwable);
+            return null;
+        });
+        
+        // 立即返回，不阻塞服务器启动
+        logger.info("FGateClient plugin initialization started asynchronously...");
     }
 
     @Override
     public void onDisable() {
         if (serviceManager != null) {
-            serviceManager.stopServices();
+            // 异步停止服务以避免阻塞服务器关闭
+            serviceManager.stopServicesAsync()
+                .thenRun(() -> {
+                    logger.info("FGateClient plugin disabled successfully!");
+                })
+                .exceptionally(throwable -> {
+                    logger.warning("Error during async shutdown: " + throwable.getMessage());
+                    return null;
+                });
+            
+            // 给异步操作一些时间完成，但不无限等待
+            try {
+                Thread.sleep(1000); // 最多等待1秒
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        } else {
+            logger.info("FGateClient plugin disabled!");
         }
-        logger.info("FGateClient plugin disabled!");
     }
 
     private void initListeners() {
-        EventUtil.registerEvents(
+        EventUtil.registerEvents(this,
                 new OnJoin(this));
     }
 
