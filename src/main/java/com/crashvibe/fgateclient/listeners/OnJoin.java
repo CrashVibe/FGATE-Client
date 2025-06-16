@@ -1,12 +1,12 @@
-package com.litesuggar.fgateclient.listeners;
+package com.crashvibe.fgateclient.listeners;
 
 import com.google.gson.JsonObject;
-import com.litesuggar.fgateclient.FGateClient;
-import com.litesuggar.fgateclient.config.ConfigManager;
-import com.litesuggar.fgateclient.manager.ServiceManager;
-import com.litesuggar.fgateclient.service.WebSocketManager;
-import com.litesuggar.fgateclient.utils.I18n;
-import com.litesuggar.fgateclient.utils.TextUtil;
+import com.crashvibe.fgateclient.FGateClient;
+import com.crashvibe.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.manager.ServiceManager;
+import com.crashvibe.fgateclient.service.WebSocketManager;
+import com.crashvibe.fgateclient.utils.I18n;
+import com.crashvibe.fgateclient.utils.TextUtil;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.event.EventHandler;

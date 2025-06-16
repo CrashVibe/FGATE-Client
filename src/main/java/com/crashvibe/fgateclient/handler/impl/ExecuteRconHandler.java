@@ -1,9 +1,9 @@
-package com.litesuggar.fgateclient.handler.impl;
+package com.crashvibe.fgateclient.handler.impl;
 
 import com.google.gson.JsonObject;
-import com.litesuggar.fgateclient.handler.RequestHandler;
-import com.litesuggar.fgateclient.service.RconManager;
-import com.litesuggar.fgateclient.service.WebSocketManager;
+import com.crashvibe.fgateclient.handler.RequestHandler;
+import com.crashvibe.fgateclient.service.RconManager;
+import com.crashvibe.fgateclient.service.WebSocketManager;
 
 /**
  * 执行 RCON 命令请求处理器

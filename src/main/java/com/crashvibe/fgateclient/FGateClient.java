@@ -1,10 +1,10 @@
-package com.litesuggar.fgateclient;
+package com.crashvibe.fgateclient;
 
-import com.litesuggar.fgateclient.config.ConfigManager;
-import com.litesuggar.fgateclient.listeners.OnJoin;
-import com.litesuggar.fgateclient.manager.ServiceManager;
-import com.litesuggar.fgateclient.utils.EventUtil;
-import com.litesuggar.fgateclient.utils.I18n;
+import com.crashvibe.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.listeners.OnJoin;
+import com.crashvibe.fgateclient.manager.ServiceManager;
+import com.crashvibe.fgateclient.utils.EventUtil;
+import com.crashvibe.fgateclient.utils.I18n;
 import com.tcoded.folialib.FoliaLib;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -38,12 +38,12 @@ public class FGateClient extends JavaPlugin {
                 // 异步加载配置文件
                 saveDefaultConfig();
                 reloadConfig();
-                
+
                 logger.info("Configuration loaded, initializing services...");
-                
+
                 // 异步创建服务管理器
-                serviceManager = new ServiceManager(logger, foliaLib, new ConfigManager(this), 
-                    getPluginMeta().getVersion(), new I18n(getDataFolder()));
+                serviceManager = new ServiceManager(logger, foliaLib, new ConfigManager(this),
+                        getPluginMeta().getVersion(), new I18n(getDataFolder()));
 
                 // 初始化 bStats
                 new Metrics(this, 26085);
@@ -56,17 +56,17 @@ public class FGateClient extends JavaPlugin {
 
                 // 异步启动服务
                 serviceManager.startServicesAsync()
-                    .thenRun(() -> {
-                        logger.info("FGateClient plugin enabled successfully!");
-                    })
-                    .exceptionally(throwable -> {
-                        logger.log(Level.SEVERE, "Failed to start services", throwable);
-                        // 在主线程禁用插件
-                        getServer().getScheduler().runTask(this, () -> {
-                            getServer().getPluginManager().disablePlugin(this);
+                        .thenRun(() -> {
+                            logger.info("FGateClient plugin enabled successfully!");
+                        })
+                        .exceptionally(throwable -> {
+                            logger.log(Level.SEVERE, "Failed to start services", throwable);
+                            // 在主线程禁用插件
+                            getServer().getScheduler().runTask(this, () -> {
+                                getServer().getPluginManager().disablePlugin(this);
+                            });
+                            return null;
                         });
-                        return null;
-                    });
 
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed to enable plugin", e);
@@ -79,7 +79,7 @@ public class FGateClient extends JavaPlugin {
             logger.log(Level.SEVERE, "Failed to initialize plugin asynchronously", throwable);
             return null;
         });
-        
+
         // 立即返回，不阻塞服务器启动
         logger.info("FGateClient plugin initialization started asynchronously...");
     }
@@ -89,14 +89,14 @@ public class FGateClient extends JavaPlugin {
         if (serviceManager != null) {
             // 异步停止服务以避免阻塞服务器关闭
             serviceManager.stopServicesAsync()
-                .thenRun(() -> {
-                    logger.info("FGateClient plugin disabled successfully!");
-                })
-                .exceptionally(throwable -> {
-                    logger.warning("Error during async shutdown: " + throwable.getMessage());
-                    return null;
-                });
-            
+                    .thenRun(() -> {
+                        logger.info("FGateClient plugin disabled successfully!");
+                    })
+                    .exceptionally(throwable -> {
+                        logger.warning("Error during async shutdown: " + throwable.getMessage());
+                        return null;
+                    });
+
             // 给异步操作一些时间完成，但不无限等待
             try {
                 Thread.sleep(1000); // 最多等待1秒

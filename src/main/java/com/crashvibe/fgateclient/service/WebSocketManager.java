@@ -1,10 +1,10 @@
-package com.litesuggar.fgateclient.service;
+package com.crashvibe.fgateclient.service;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.litesuggar.fgateclient.config.ConfigManager;
-import com.litesuggar.fgateclient.handler.RequestDispatcher;
+import com.crashvibe.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.handler.RequestDispatcher;
 import com.tcoded.folialib.FoliaLib;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;

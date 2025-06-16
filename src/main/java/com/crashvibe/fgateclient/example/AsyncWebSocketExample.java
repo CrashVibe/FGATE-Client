@@ -1,7 +1,7 @@
-package com.litesuggar.fgateclient.example;
+package com.crashvibe.fgateclient.example;
 
 import com.google.gson.JsonObject;
-import com.litesuggar.fgateclient.service.WebSocketManager;
+import com.crashvibe.fgateclient.service.WebSocketManager;
 
 import java.util.HashMap;
 import java.util.Map;

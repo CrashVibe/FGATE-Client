@@ -1,6 +1,6 @@
-package com.litesuggar.fgateclient.service;
+package com.crashvibe.fgateclient.service;
 
-import com.litesuggar.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.config.ConfigManager;
 import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -43,10 +43,10 @@ public class RconManager {
         if (!configManager.isUseBuiltinRcon() && configManager.isRconConfigured()) {
             // 异步初始化外部 RCON，避免阻塞构造函数
             initializeExternalRconAsync()
-                .exceptionally(throwable -> {
-                    logger.log(Level.WARNING, "Failed to initialize external RCON asynchronously", throwable);
-                    return null;
-                });
+                    .exceptionally(throwable -> {
+                        logger.log(Level.WARNING, "Failed to initialize external RCON asynchronously", throwable);
+                        return null;
+                    });
         }
     }
 

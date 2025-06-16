@@ -1,6 +1,6 @@
-package com.litesuggar.fgateclient.service;
+package com.crashvibe.fgateclient.service;
 
-import com.litesuggar.fgateclient.utils.TextUtil;
+import com.crashvibe.fgateclient.utils.TextUtil;
 import com.tcoded.folialib.FoliaLib;
 
 import net.kyori.adventure.text.Component;

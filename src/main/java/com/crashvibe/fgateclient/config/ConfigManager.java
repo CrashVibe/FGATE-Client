@@ -1,4 +1,4 @@
-package com.litesuggar.fgateclient.config;
+package com.crashvibe.fgateclient.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;

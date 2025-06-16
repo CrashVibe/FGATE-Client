@@ -1,6 +1,6 @@
 name: FGateClient
 version: ${version}
-main: com.litesuggar.fgateclient.FGateClient
+main: com.crashvibe.fgateclient.FGateClient
 api-version: "1.20"
 
 softdepend:

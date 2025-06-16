@@ -1,6 +1,6 @@
-package com.litesuggar.fgateclient.utils;
+package com.crashvibe.fgateclient.utils;
 
-import com.litesuggar.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.config.ConfigManager;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 

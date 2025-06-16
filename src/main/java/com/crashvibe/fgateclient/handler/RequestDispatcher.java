@@ -1,4 +1,4 @@
-package com.litesuggar.fgateclient.handler;
+package com.crashvibe.fgateclient.handler;
 
 import com.google.gson.JsonObject;
 import com.tcoded.folialib.FoliaLib;

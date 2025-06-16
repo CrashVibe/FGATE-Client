@@ -1,4 +1,4 @@
-package com.litesuggar.fgateclient.utils;
+package com.crashvibe.fgateclient.utils;
 
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;

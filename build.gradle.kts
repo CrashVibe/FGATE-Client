@@ -4,7 +4,7 @@ plugins {
     id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
-group = "org.litesuggar"
+group = "org.crashvibe"
 version = "0.0.1"
 
 repositories {

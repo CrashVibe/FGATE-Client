@@ -1,13 +1,13 @@
-package com.litesuggar.fgateclient.manager;
+package com.crashvibe.fgateclient.manager;
 
-import com.litesuggar.fgateclient.config.ConfigManager;
-import com.litesuggar.fgateclient.handler.RequestDispatcher;
-import com.litesuggar.fgateclient.handler.impl.ExecuteRconHandler;
-import com.litesuggar.fgateclient.handler.impl.GetClientInfoHandler;
-import com.litesuggar.fgateclient.handler.impl.KickPlayerHandler;
-import com.litesuggar.fgateclient.service.PlayerManager;
-import com.litesuggar.fgateclient.service.RconManager;
-import com.litesuggar.fgateclient.service.WebSocketManager;
+import com.crashvibe.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.handler.RequestDispatcher;
+import com.crashvibe.fgateclient.handler.impl.ExecuteRconHandler;
+import com.crashvibe.fgateclient.handler.impl.GetClientInfoHandler;
+import com.crashvibe.fgateclient.handler.impl.KickPlayerHandler;
+import com.crashvibe.fgateclient.service.PlayerManager;
+import com.crashvibe.fgateclient.service.RconManager;
+import com.crashvibe.fgateclient.service.WebSocketManager;
 import com.tcoded.folialib.FoliaLib;
 
 import java.net.URI;
@@ -25,7 +25,7 @@ public class ServiceManager {
     private final FoliaLib foliaLib;
     private final ConfigManager configManager;
     private final String clientVersion;
-    private final com.litesuggar.fgateclient.utils.I18n i18n;
+    private final com.crashvibe.fgateclient.utils.I18n i18n;
     // 服务实例
     private RconManager rconManager;
     private PlayerManager playerManager;
@@ -33,7 +33,7 @@ public class ServiceManager {
     private RequestDispatcher requestDispatcher;
 
     public ServiceManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager, String clientVersion,
-            com.litesuggar.fgateclient.utils.I18n i18n) {
+            com.crashvibe.fgateclient.utils.I18n i18n) {
         this.logger = logger;
         this.foliaLib = foliaLib;
         this.configManager = configManager;
@@ -43,11 +43,11 @@ public class ServiceManager {
 
         // 异步初始化I18n的配置管理器引用和预加载
         i18n.initializeAsync(configManager)
-            .thenCompose(v -> i18n.preloadLanguageFilesAsync())
-            .exceptionally(throwable -> {
-                logger.warning("Failed to initialize I18n asynchronously: " + throwable.getMessage());
-                return null;
-            });
+                .thenCompose(v -> i18n.preloadLanguageFilesAsync())
+                .exceptionally(throwable -> {
+                    logger.warning("Failed to initialize I18n asynchronously: " + throwable.getMessage());
+                    return null;
+                });
 
         initializeServices();
     }
@@ -98,15 +98,15 @@ public class ServiceManager {
         return CompletableFuture.runAsync(() -> {
             logger.info("Starting services......");
         })
-        .thenCompose(v -> {
-            // 异步验证配置
-            return configManager.validateConfigAsync();
-        })
-        .thenRun(() -> {
-            // 连接 WebSocket
-            webSocketManager.connect();
-            logger.info("Done!");
-        });
+                .thenCompose(v -> {
+                    // 异步验证配置
+                    return configManager.validateConfigAsync();
+                })
+                .thenRun(() -> {
+                    // 连接 WebSocket
+                    webSocketManager.connect();
+                    logger.info("Done!");
+                });
     }
 
     /**
@@ -193,7 +193,7 @@ public class ServiceManager {
         return clientVersion;
     }
 
-    public com.litesuggar.fgateclient.utils.I18n getI18n() {
+    public com.crashvibe.fgateclient.utils.I18n getI18n() {
         return i18n;
     }
 }
