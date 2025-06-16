@@ -1,17 +1,18 @@
-package com.litesuggar.fgateclient.manager;
+package com.crashvibe.fgateclient.manager;
 
-import com.litesuggar.fgateclient.config.ConfigManager;
-import com.litesuggar.fgateclient.handler.RequestDispatcher;
-import com.litesuggar.fgateclient.handler.impl.ExecuteRconHandler;
-import com.litesuggar.fgateclient.handler.impl.GetClientInfoHandler;
-import com.litesuggar.fgateclient.handler.impl.KickPlayerHandler;
-import com.litesuggar.fgateclient.service.PlayerManager;
-import com.litesuggar.fgateclient.service.RconManager;
-import com.litesuggar.fgateclient.service.WebSocketManager;
+import com.crashvibe.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.handler.RequestDispatcher;
+import com.crashvibe.fgateclient.handler.impl.ExecuteRconHandler;
+import com.crashvibe.fgateclient.handler.impl.GetClientInfoHandler;
+import com.crashvibe.fgateclient.handler.impl.KickPlayerHandler;
+import com.crashvibe.fgateclient.service.PlayerManager;
+import com.crashvibe.fgateclient.service.RconManager;
+import com.crashvibe.fgateclient.service.WebSocketManager;
 import com.tcoded.folialib.FoliaLib;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
 /**
@@ -24,18 +25,30 @@ public class ServiceManager {
     private final FoliaLib foliaLib;
     private final ConfigManager configManager;
     private final String clientVersion;
+    private final com.crashvibe.fgateclient.utils.I18n i18n;
     // 服务实例
     private RconManager rconManager;
     private PlayerManager playerManager;
     private WebSocketManager webSocketManager;
     private RequestDispatcher requestDispatcher;
 
-    public ServiceManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager, String clientVersion) {
+    public ServiceManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager, String clientVersion,
+            com.crashvibe.fgateclient.utils.I18n i18n) {
         this.logger = logger;
         this.foliaLib = foliaLib;
         this.configManager = configManager;
         this.clientVersion = clientVersion;
+        this.i18n = i18n;
         instance = this;
+
+        // 异步初始化I18n的配置管理器引用和预加载
+        i18n.initializeAsync(configManager)
+                .thenCompose(v -> i18n.preloadLanguageFilesAsync())
+                .exceptionally(throwable -> {
+                    logger.warning("Failed to initialize I18n asynchronously: " + throwable.getMessage());
+                    return null;
+                });
+
         initializeServices();
     }
 
@@ -53,7 +66,14 @@ public class ServiceManager {
 
         // 初始化 WebSocket 服务
         try {
-            webSocketManager = new WebSocketManager(new URI(configManager.getWebsocketUrl()), configManager.getWebsocketToken());
+            webSocketManager = new WebSocketManager(
+                    new URI(configManager.getWebsocketUrl()),
+                    configManager.getWebsocketToken(),
+                    logger,
+                    foliaLib,
+                    configManager,
+                    requestDispatcher,
+                    clientVersion);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -66,13 +86,31 @@ public class ServiceManager {
 
     private void registerHandlers() {
         requestDispatcher
-                .registerHandler(new GetClientInfoHandler(webSocketManager, rconManager))
+                .registerHandler(new GetClientInfoHandler(webSocketManager, rconManager, logger))
                 .registerHandler(new ExecuteRconHandler(webSocketManager, rconManager))
                 .registerHandler(new KickPlayerHandler(webSocketManager, playerManager));
     }
 
     /**
-     * 启动所有服务
+     * 异步启动所有服务
+     */
+    public CompletableFuture<Void> startServicesAsync() {
+        return CompletableFuture.runAsync(() -> {
+            logger.info("Starting services......");
+        })
+                .thenCompose(v -> {
+                    // 异步验证配置
+                    return configManager.validateConfigAsync();
+                })
+                .thenRun(() -> {
+                    // 连接 WebSocket
+                    webSocketManager.connect();
+                    logger.info("Done!");
+                });
+    }
+
+    /**
+     * 启动所有服务（同步版本，保持兼容性）
      */
     public void startServices() {
         logger.info("Starting services......");
@@ -84,6 +122,25 @@ public class ServiceManager {
         webSocketManager.connect();
 
         logger.info("Done!");
+    }
+
+    /**
+     * 异步停止所有服务
+     */
+    public CompletableFuture<Void> stopServicesAsync() {
+        return CompletableFuture.runAsync(() -> {
+            logger.info("Stopping services......");
+
+            if (webSocketManager != null) {
+                webSocketManager.close(1001);
+            }
+
+            if (rconManager != null) {
+                rconManager.close();
+            }
+
+            logger.info("ALL SERVICES HAS STOPPED");
+        });
     }
 
     /**
@@ -104,6 +161,10 @@ public class ServiceManager {
     }
 
     // Getter 方法
+    public Logger getLogger() {
+        return logger;
+    }
+
     public RconManager getRconManager() {
         return rconManager;
     }
@@ -130,5 +191,9 @@ public class ServiceManager {
 
     public String getClientVersion() {
         return clientVersion;
+    }
+
+    public com.crashvibe.fgateclient.utils.I18n getI18n() {
+        return i18n;
     }
 }

@@ -1,0 +1,5 @@
+not_ready: "服务器尚未准备好，请稍后再试。"
+kick_reason: "你已被服务器踢出。"
+websocket_denied: "玩家 {player} 因 WebSocket 不可用被拒绝进入"
+player_kicked: "玩家 {player} 因 {reason} 被拒绝加入服务器"
+player_join_error: "player.join 响应错误: {error}"

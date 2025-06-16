@@ -1,11 +1,10 @@
-# RemoteClient Plugin Configuration
 debug:
   enable: false
   #  调试模式，开启后将打印所有请求和响应
 # WebSocket连接配置
 websocket:
   # WebSocket服务器地址
-  url: "wss://127.0.0.1:3000/api"
+  url: "ws://127.0.0.1:3000/api"
 
   # 认证Token
   token: "your-auth-token-here"
@@ -22,5 +21,8 @@ rcon:
   port: 25575
   password: "your-rcon-password"
 
-# language: zh_CN
-# 语言，可能在后续做支持
+# 默认语言（根据languages文件夹下的文件自动加载）
+fallback-language: "zh_CN"
+
+# 玩家进服时WebSocket不可用是否允许直接进入
+allowJoinWithoutWebSocket: false

@@ -1,10 +1,9 @@
-package com.litesuggar.fgateclient.handler.impl;
+package com.crashvibe.fgateclient.handler.impl;
 
 import com.google.gson.JsonObject;
-import com.litesuggar.fgateclient.FGateClient;
-import com.litesuggar.fgateclient.handler.RequestHandler;
-import com.litesuggar.fgateclient.service.RconManager;
-import com.litesuggar.fgateclient.service.WebSocketManager;
+import com.crashvibe.fgateclient.handler.RequestHandler;
+import com.crashvibe.fgateclient.service.RconManager;
+import com.crashvibe.fgateclient.service.WebSocketManager;
 import org.bukkit.Bukkit;
 
 import java.util.logging.Logger;
@@ -15,11 +14,12 @@ import java.util.logging.Logger;
 public class GetClientInfoHandler extends RequestHandler {
 
     private final RconManager rconManager;
-    Logger logger = FGateClient.getInstance().getLogger();
+    private final Logger logger;
 
-    public GetClientInfoHandler(WebSocketManager webSocketManager, RconManager rconManager) {
+    public GetClientInfoHandler(WebSocketManager webSocketManager, RconManager rconManager, Logger logger) {
         super(webSocketManager);
         this.rconManager = rconManager;
+        this.logger = logger;
     }
 
     @Override

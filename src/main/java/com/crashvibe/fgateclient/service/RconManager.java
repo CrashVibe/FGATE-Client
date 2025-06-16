@@ -1,6 +1,6 @@
-package com.litesuggar.fgateclient.service;
+package com.crashvibe.fgateclient.service;
 
-import com.litesuggar.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.config.ConfigManager;
 import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -23,6 +23,8 @@ import java.util.logging.Logger;
 public class RconManager {
 
     private final Logger logger;
+    // 保留 foliaLib 以备将来可能需要使用服务器线程调度
+    @SuppressWarnings("unused")
     private final FoliaLib foliaLib;
     private final ConfigManager configManager;
 
@@ -39,7 +41,12 @@ public class RconManager {
         this.configManager = configManager;
 
         if (!configManager.isUseBuiltinRcon() && configManager.isRconConfigured()) {
-            initializeExternalRcon();
+            // 异步初始化外部 RCON，避免阻塞构造函数
+            initializeExternalRconAsync()
+                    .exceptionally(throwable -> {
+                        logger.log(Level.WARNING, "Failed to initialize external RCON asynchronously", throwable);
+                        return null;
+                    });
         }
     }
 
@@ -70,11 +77,13 @@ public class RconManager {
         rconConnected = false;
     }
 
-    private String executeBuiltinCommand(String command) throws Exception {
+    /**
+     * 异步执行内置命令（推荐使用）
+     */
+    public CompletableFuture<String> executeBuiltinCommandAsync(String command) {
         CompletableFuture<String> future = new CompletableFuture<>();
 
-        foliaLib.getScheduler().runAsync(task -> {
-
+        CompletableFuture.runAsync(() -> {
             try {
                 ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
                 boolean success = Bukkit.dispatchCommand(consoleSender, command);
@@ -83,7 +92,23 @@ public class RconManager {
             } catch (Exception e) {
                 future.completeExceptionally(e);
             }
+        });
 
+        return future;
+    }
+
+    private String executeBuiltinCommand(String command) throws Exception {
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
+                boolean success = Bukkit.dispatchCommand(consoleSender, command);
+                String output = success ? "Success" : "Failed";
+                future.complete(output);
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
         });
 
         return future.get(10, TimeUnit.SECONDS);
@@ -111,26 +136,73 @@ public class RconManager {
         }
     }
 
-    private void initializeExternalRcon() {
-        try {
-            rconSocket = new Socket(configManager.getRconHost(), configManager.getRconPort());
-            rconOut = new DataOutputStream(rconSocket.getOutputStream());
-            rconIn = new DataInputStream(rconSocket.getInputStream());
+    /**
+     * 异步初始化外部 RCON 连接
+     */
+    public CompletableFuture<Void> initializeExternalRconAsync() {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                rconSocket = new Socket(configManager.getRconHost(), configManager.getRconPort());
+                rconOut = new DataOutputStream(rconSocket.getOutputStream());
+                rconIn = new DataInputStream(rconSocket.getInputStream());
 
-            // 认证
-            sendRconPacket(1, 3, configManager.getRconPassword()); // Type 3 = SERVERDATA_AUTH
-            RconPacket authResponse = readRconPacket();
+                // 认证
+                sendRconPacket(1, 3, configManager.getRconPassword()); // Type 3 = SERVERDATA_AUTH
+                RconPacket authResponse = readRconPacket();
 
-            if (authResponse.id == -1) {
-                throw new Exception("RCON auth failed");
+                if (authResponse.id == -1) {
+                    throw new Exception("RCON auth failed");
+                }
+
+                rconConnected = true;
+                logger.info("Remote RCON server connected asynchronously");
+
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Fail to connect remote RCON server asynchronously!", e);
+                rconConnected = false;
+            }
+        });
+    }
+
+    /**
+     * 异步执行外部 RCON 命令
+     */
+    public CompletableFuture<String> executeExternalRconCommandAsync(String command) {
+        return CompletableFuture.supplyAsync(() -> {
+            if (!rconConnected) {
+                throw new RuntimeException("RCON hasn't connected yet!");
             }
 
-            rconConnected = true;
-            logger.info("Remote RCON server connected");
+            synchronized (this) {
+                try {
+                    int id = requestId++;
 
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Fail to connect remote RCON server!", e);
-            rconConnected = false;
+                    // 发送RCON命令
+                    sendRconPacket(id, 2, command); // Type 2 = SERVERDATA_EXECCOMMAND
+
+                    // 读取响应
+                    RconPacket response = readRconPacket();
+
+                    if (response.id != id) {
+                        throw new RuntimeException("Response id error.");
+                    }
+
+                    return response.body;
+                } catch (Exception e) {
+                    throw new RuntimeException("RCON command execution failed", e);
+                }
+            }
+        });
+    }
+
+    /**
+     * 异步执行命令（自动选择内置或外部 RCON）
+     */
+    public CompletableFuture<String> executeCommandAsync(String command) {
+        if (configManager.isUseBuiltinRcon()) {
+            return executeBuiltinCommandAsync(command);
+        } else {
+            return executeExternalRconCommandAsync(command);
         }
     }
 
@@ -179,6 +251,7 @@ public class RconManager {
 
     private static class RconPacket {
         final int id;
+        @SuppressWarnings("unused")
         final int type;
         final String body;
 
