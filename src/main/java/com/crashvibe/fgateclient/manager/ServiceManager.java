@@ -33,7 +33,7 @@ public class ServiceManager {
     private RequestDispatcher requestDispatcher;
 
     public ServiceManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager, String clientVersion,
-            com.crashvibe.fgateclient.utils.I18n i18n) {
+                          com.crashvibe.fgateclient.utils.I18n i18n) {
         this.logger = logger;
         this.foliaLib = foliaLib;
         this.configManager = configManager;
@@ -96,8 +96,8 @@ public class ServiceManager {
      */
     public CompletableFuture<Void> startServicesAsync() {
         return CompletableFuture.runAsync(() -> {
-            logger.info("Starting services......");
-        })
+                    logger.info("Starting services......");
+                })
                 .thenCompose(v -> {
                     // 异步验证配置
                     return configManager.validateConfigAsync();
@@ -161,38 +161,47 @@ public class ServiceManager {
     }
 
     // Getter 方法
+    @SuppressWarnings("unused")
     public Logger getLogger() {
         return logger;
     }
 
+    @SuppressWarnings("unused")
     public RconManager getRconManager() {
         return rconManager;
     }
 
+    @SuppressWarnings("unused")
     public ConfigManager getConfigManager() {
         return configManager;
     }
 
+    @SuppressWarnings("unused")
     public PlayerManager getPlayerManager() {
         return playerManager;
     }
 
+    @SuppressWarnings("unused")
     public WebSocketManager getWebSocketManager() {
         return webSocketManager;
     }
 
+    @SuppressWarnings("unused")
     public FoliaLib getFoliaLib() {
         return foliaLib;
     }
 
+    @SuppressWarnings("unused")
     public RequestDispatcher getRequestDispatcher() {
         return requestDispatcher;
     }
 
+    @SuppressWarnings("unused")
     public String getClientVersion() {
         return clientVersion;
     }
 
+    @SuppressWarnings("unused")
     public com.crashvibe.fgateclient.utils.I18n getI18n() {
         return i18n;
     }

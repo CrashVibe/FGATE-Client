@@ -1,10 +1,10 @@
 package com.crashvibe.fgateclient.service;
 
+import com.crashvibe.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.handler.RequestDispatcher;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.crashvibe.fgateclient.config.ConfigManager;
-import com.crashvibe.fgateclient.handler.RequestDispatcher;
 import com.tcoded.folialib.FoliaLib;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -22,20 +22,20 @@ import java.util.logging.Logger;
  */
 public class WebSocketManager extends WebSocketClient {
 
+    public final Map<String, CompletableFuture<JsonObject>> pendingRequests = new ConcurrentHashMap<>();
     private final Logger logger;
     @SuppressWarnings("unused")
     private final FoliaLib foliaLib;
     private final ConfigManager configManager;
     private final RequestDispatcher requestDispatcher;
-    public final Map<String, CompletableFuture<JsonObject>> pendingRequests = new ConcurrentHashMap<>();
     private final String clientVersion;
     private final WebSocketClient client;
     private boolean connected = false;
     private int retryCount = 0;
 
     public WebSocketManager(URI uri, String token, Logger logger, FoliaLib foliaLib,
-            ConfigManager configManager, RequestDispatcher requestDispatcher,
-            String clientVersion) {
+                            ConfigManager configManager, RequestDispatcher requestDispatcher,
+                            String clientVersion) {
 
         super(uri, new HashMap<>() {
             {
@@ -145,6 +145,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 异步发送响应消息
      */
+    @SuppressWarnings("unused")
     public void sendResponseAsync(String id, JsonObject result, String error) {
         CompletableFuture.runAsync(() -> {
             JsonObject response = new JsonObject();
@@ -164,6 +165,7 @@ public class WebSocketManager extends WebSocketClient {
         });
     }
 
+    @SuppressWarnings("unused")
     public void sendResponse(String id, JsonObject result, String error) {
         JsonObject response = new JsonObject();
         response.addProperty("id", id);
@@ -184,6 +186,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 异步发送消息（不阻塞调用线程）
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<Void> sendAsync(JsonObject message) {
         return CompletableFuture.runAsync(() -> {
             if (configManager.getConfig().getBoolean("debug.enable")) {
@@ -197,6 +200,7 @@ public class WebSocketManager extends WebSocketClient {
         });
     }
 
+    @SuppressWarnings("unused")
     public void send(JsonObject message) {
         if (configManager.getConfig().getBoolean("debug.enable")) {
             logger.info("Send message: " + message);
@@ -206,6 +210,7 @@ public class WebSocketManager extends WebSocketClient {
         }
     }
 
+    @SuppressWarnings("unused")
     private void processMessage(JsonObject json) {
         try {
             if (configManager.getConfig().getBoolean("debug.enable")) {
@@ -225,6 +230,7 @@ public class WebSocketManager extends WebSocketClient {
         }
     }
 
+    @SuppressWarnings("unused")
     private void processMessage(JsonArray array) {
         for (int i = 0; i < array.size(); i++) {
             var json = array.get(i).getAsJsonObject();
@@ -332,6 +338,7 @@ public class WebSocketManager extends WebSocketClient {
      * @param params 参数对象
      * @return 响应JsonObject的CompletableFuture
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<JsonObject> sendRequestAsync(String method, JsonObject params) {
         String requestId = java.util.UUID.randomUUID().toString();
         JsonObject request = new JsonObject();
@@ -372,6 +379,7 @@ public class WebSocketManager extends WebSocketClient {
      * @param params 参数对象
      * @return 响应JsonObject，超时或异常返回null
      */
+    @SuppressWarnings("unused")
     public JsonObject sendRequest(String method, JsonObject params) {
         try {
             return sendRequestAsync(method, params).get(5, java.util.concurrent.TimeUnit.SECONDS);
@@ -391,6 +399,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 获取当前待处理的请求数量（用于调试）
      */
+    @SuppressWarnings("unused")
     public int getPendingRequestsCount() {
         return pendingRequests.size();
     }
@@ -398,6 +407,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 获取待处理请求的ID列表（用于调试）
      */
+    @SuppressWarnings("unused")
     public java.util.Set<String> getPendingRequestIds() {
         return new java.util.HashSet<>(pendingRequests.keySet());
     }
@@ -405,6 +415,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 异步清理超时的待处理请求
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<Integer> cleanupTimeoutRequestsAsync() {
         return CompletableFuture.supplyAsync(() -> {
             int cleanedCount = 0;
@@ -431,6 +442,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 异步检查连接状态并尝试重连
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<Boolean> ensureConnectionAsync() {
         return CompletableFuture.supplyAsync(() -> {
             if (isConnected()) {
@@ -452,6 +464,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 批量发送多个异步请求
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<Map<String, JsonObject>> sendMultipleRequestsAsync(Map<String, JsonObject> methodParams) {
         return CompletableFuture.supplyAsync(() -> {
             Map<String, CompletableFuture<JsonObject>> futures = new HashMap<>();
@@ -481,6 +494,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 异步获取连接统计信息
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<JsonObject> getConnectionStatsAsync() {
         return CompletableFuture.supplyAsync(() -> {
             JsonObject stats = new JsonObject();
@@ -497,6 +511,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 异步健康检查
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<Boolean> healthCheckAsync() {
         return CompletableFuture.supplyAsync(() -> {
             if (!isConnected()) {
@@ -521,6 +536,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 异步重置连接（断开并重新连接）
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<Boolean> resetConnectionAsync() {
         return CompletableFuture.supplyAsync(() -> {
             try {
