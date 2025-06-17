@@ -37,7 +37,7 @@ public class OnJoin implements Listener {
 
         boolean allowJoinWithoutWebSocket = configManager.isAllowJoinWithoutWebSocket();
         String playerName = event.getPlayer().getName();
-        String playerIP = event.getAddress() != null ? event.getAddress().getHostAddress() : null;
+        String playerIP = event.getAddress().getHostAddress();
         String uuid = event.getPlayer().getUniqueId().toString();
         long timestamp = System.currentTimeMillis();
 
