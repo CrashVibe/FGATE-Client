@@ -12,6 +12,7 @@ import java.util.logging.Logger;
  * WebSocketManager 异步使用示例
  * 展示如何使用新的异步方法来避免阻塞主线程
  */
+@SuppressWarnings("unused")
 public class AsyncWebSocketExample {
 
     private final WebSocketManager webSocketManager;

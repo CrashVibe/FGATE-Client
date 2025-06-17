@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+@SuppressWarnings("unused")
 public class FGateClient extends JavaPlugin {
 
     private static FGateClient instance;
@@ -23,7 +23,7 @@ public class FGateClient extends JavaPlugin {
     public final Logger logger = getLogger();
     private ServiceManager serviceManager;
 
-    @SuppressWarnings("unused")
+    
     public static FGateClient getInstance() {
         return instance;
     }

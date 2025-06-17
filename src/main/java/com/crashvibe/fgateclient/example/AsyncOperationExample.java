@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 /**
  * 异步操作示例 - 展示如何正确使用异步方法避免阻塞
  */
+@SuppressWarnings("unused")
 public class AsyncOperationExample {
 
     private final FGateClient plugin;

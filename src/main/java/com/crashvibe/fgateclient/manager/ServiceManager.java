@@ -1,5 +1,6 @@
 package com.crashvibe.fgateclient.manager;
 
+import com.crashvibe.fgateclient.commands.PlayerBind;
 import com.crashvibe.fgateclient.config.ConfigManager;
 import com.crashvibe.fgateclient.handler.RequestDispatcher;
 import com.crashvibe.fgateclient.handler.impl.ExecuteRconHandler;
@@ -18,6 +19,7 @@ import java.util.logging.Logger;
 /**
  * 服务管理器 - 负责创建和管理所有服务实例
  */
+@SuppressWarnings("unused")
 public class ServiceManager {
 
     private static ServiceManager instance;
@@ -80,7 +82,7 @@ public class ServiceManager {
 
         // 注册请求处理器
         registerHandlers();
-
+        PlayerBind.initWebsocketManager();
         logger.info("Init done, " + requestDispatcher.getHandlerCount() + " handlers has been enabled");
     }
 
@@ -112,6 +114,7 @@ public class ServiceManager {
     /**
      * 启动所有服务（同步版本，保持兼容性）
      */
+    
     public void startServices() {
         logger.info("Starting services......");
 
@@ -146,6 +149,7 @@ public class ServiceManager {
     /**
      * 停止所有服务
      */
+    
     public void stopServices() {
         logger.info("Stopping services......");
 
@@ -161,47 +165,47 @@ public class ServiceManager {
     }
 
     // Getter 方法
-    @SuppressWarnings("unused")
+    
     public Logger getLogger() {
         return logger;
     }
 
-    @SuppressWarnings("unused")
+    
     public RconManager getRconManager() {
         return rconManager;
     }
 
-    @SuppressWarnings("unused")
+    
     public ConfigManager getConfigManager() {
         return configManager;
     }
 
-    @SuppressWarnings("unused")
+    
     public PlayerManager getPlayerManager() {
         return playerManager;
     }
 
-    @SuppressWarnings("unused")
+    
     public WebSocketManager getWebSocketManager() {
         return webSocketManager;
     }
 
-    @SuppressWarnings("unused")
+    
     public FoliaLib getFoliaLib() {
         return foliaLib;
     }
 
-    @SuppressWarnings("unused")
+    
     public RequestDispatcher getRequestDispatcher() {
         return requestDispatcher;
     }
 
-    @SuppressWarnings("unused")
+    
     public String getClientVersion() {
         return clientVersion;
     }
 
-    @SuppressWarnings("unused")
+    
     public com.crashvibe.fgateclient.utils.I18n getI18n() {
         return i18n;
     }
