@@ -363,30 +363,31 @@ public class WebSocketManager extends WebSocketClient {
 
         return future;
     }
-
-    /**
-     * 通用工具方法：发送RPC请求并等待响应（同步版本，可能阻塞线程）
-     * 建议使用 sendRequestAsync 方法代替此方法
-     *
-     * @param method 方法名
-     * @param params 参数对象
-     * @return 响应JsonObject，超时或异常返回null
-     */
-    public JsonObject sendRequest(String method, JsonObject params) {
-        try {
-            return sendRequestAsync(method, params).get(5, java.util.concurrent.TimeUnit.SECONDS);
-        } catch (java.util.concurrent.TimeoutException e) {
-            logger.warning(method + " request timed out after 5 seconds");
-            return null;
-        } catch (Exception e) {
-            String errorMsg = e.getMessage();
-            if (errorMsg == null) {
-                errorMsg = e.getClass().getSimpleName();
-            }
-            logger.warning(method + " request exception: " + errorMsg);
-            return null;
-        }
-    }
+    // 弃用-保留
+    // /**
+    // * 通用工具方法：发送RPC请求并等待响应（同步版本，可能阻塞线程）
+    // * 建议使用 sendRequestAsync 方法代替此方法
+    // *
+    // * @param method 方法名
+    // * @param params 参数对象
+    // * @return 响应JsonObject，超时或异常返回null
+    // */
+    // public JsonObject sendRequest(String method, JsonObject params) {
+    // try {
+    // return sendRequestAsync(method, params).get(5,
+    // java.util.concurrent.TimeUnit.SECONDS);
+    // } catch (java.util.concurrent.TimeoutException e) {
+    // logger.warning(method + " request timed out after 5 seconds");
+    // return null;
+    // } catch (Exception e) {
+    // String errorMsg = e.getMessage();
+    // if (errorMsg == null) {
+    // errorMsg = e.getClass().getSimpleName();
+    // }
+    // logger.warning(method + " request exception: " + errorMsg);
+    // return null;
+    // }
+    // }
 
     /**
      * 获取当前待处理的请求数量（用于调试）
@@ -542,4 +543,51 @@ public class WebSocketManager extends WebSocketClient {
             }
         });
     }
+
+    /**
+     * 异步发送通知消息（不需要等待响应，用于事件通知）
+     *
+     * @param method 方法名
+     * @param params 参数对象
+     */
+    public void sendNotificationAsync(String method, JsonObject params) {
+        CompletableFuture.runAsync(() -> {
+            JsonObject notification = new JsonObject();
+            notification.addProperty("jsonrpc", "2.0");
+            notification.addProperty("method", method);
+            if (params != null) {
+                notification.add("params", params);
+            }
+            // 通知消息不包含 id 字段，表示不需要响应
+
+            if (configManager.getConfig().getBoolean("debug.enable")) {
+                logger.info("Sending notification for method: " + method);
+            }
+
+            send(notification);
+        });
+    }
+
+    // 弃用-保留
+    // /**
+    //  * 发送通知消息（同步版本，用于事件通知）
+    //  *
+    //  * @param method 方法名
+    //  * @param params 参数对象
+    //  */
+    // public void sendNotification(String method, JsonObject params) {
+    //     JsonObject notification = new JsonObject();
+    //     notification.addProperty("jsonrpc", "2.0");
+    //     notification.addProperty("method", method);
+    //     if (params != null) {
+    //         notification.add("params", params);
+    //     }
+    //     // 通知消息不包含 id 字段，表示不需要响应
+
+    //     if (configManager.getConfig().getBoolean("debug.enable")) {
+    //         logger.info("Sending notification for method: " + method);
+    //     }
+
+    //     send(notification);
+    // }
 }

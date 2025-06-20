@@ -69,7 +69,8 @@ public class OnJoin implements Listener {
                 return;
             }
 
-            response = webSocketManager.sendRequest("player.join", paramsJson);
+            response = webSocketManager.sendRequestAsync("player.join", paramsJson).get(5,
+                    java.util.concurrent.TimeUnit.SECONDS);
         } catch (Exception e) {
             plugin.getLogger().warning("Failed to send player.join request for " + playerName + ": " + e.getMessage());
         }
