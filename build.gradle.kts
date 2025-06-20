@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     kotlin("jvm") version "2.2.0-RC2"
     id("com.gradleup.shadow") version "8.3.6"
@@ -29,12 +31,23 @@ dependencies {
 }
 
 tasks {
-  runServer {
-    // Configure the Minecraft version for our task.
-    // This is the only required configuration besides applying the plugin.
-    // Your plugin's jar (or shadowJar if present) will be used automatically.
-    minecraftVersion("1.21.4")
-  }
+    runServer {
+        // Configure the Minecraft version for our task.
+        // This is the only required configuration besides applying the plugin.
+        // Your plugin's jar (or shadowJar if present) will be used automatically.
+        minecraftVersion("1.21.4")
+    }
+    withType<JavaCompile>().configureEach {
+        options.encoding = "UTF-8"
+    }
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion.toString()))
+
+            freeCompilerArgs.addAll("-Xjsr305=strict", "-java-parameters")
+
+        }
+    }
     shadowJar {
         archiveFileName = "${rootProject.name}-Modern-${project.version}.${archiveExtension.get()}"
         exclude("META-INF/**")

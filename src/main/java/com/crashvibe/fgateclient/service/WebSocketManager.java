@@ -363,6 +363,7 @@ public class WebSocketManager extends WebSocketClient {
 
         return future;
     }
+
     // 弃用-保留
     // /**
     // * 通用工具方法：发送RPC请求并等待响应（同步版本，可能阻塞线程）
@@ -543,6 +544,7 @@ public class WebSocketManager extends WebSocketClient {
             }
         });
     }
+
 
     /**
      * 异步发送通知消息（不需要等待响应，用于事件通知）
