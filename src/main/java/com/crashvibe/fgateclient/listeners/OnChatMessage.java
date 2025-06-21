@@ -5,8 +5,6 @@ import com.crashvibe.fgateclient.manager.ServiceManager;
 import com.crashvibe.fgateclient.service.WebSocketManager;
 import com.google.gson.JsonObject;
 
-import java.util.concurrent.CompletableFuture;
-
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import io.papermc.paper.event.player.AsyncChatEvent;

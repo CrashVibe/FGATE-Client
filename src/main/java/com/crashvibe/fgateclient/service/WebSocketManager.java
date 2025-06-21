@@ -110,11 +110,12 @@ public class WebSocketManager extends WebSocketClient {
             } else {
                 logger.log(Level.SEVERE, "WebSocket connect failed", ex);
             }
-
-            if (retryCount < 10) {
-                scheduleReconnect();
-            } else if (retryCount == 10) {
-                logger.severe("Reach max retry count!Please restart your server for try again!");
+            scheduleReconnect();
+            // 延迟
+            try {
+                Thread.sleep(1000); // 等待1秒后重试
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         });
     }
@@ -545,11 +546,9 @@ public class WebSocketManager extends WebSocketClient {
         });
     }
 
-
     /**
-     * 异步发送通知消息（不需要等待响应，用于事件通知）
      *
-     * @param method 方法名
+     *
      * @param params 参数对象
      */
     public void sendNotificationAsync(String method, JsonObject params) {
@@ -572,24 +571,24 @@ public class WebSocketManager extends WebSocketClient {
 
     // 弃用-保留
     // /**
-    //  * 发送通知消息（同步版本，用于事件通知）
-    //  *
-    //  * @param method 方法名
-    //  * @param params 参数对象
-    //  */
-    // public void sendNotification(String method, JsonObject params) {
-    //     JsonObject notification = new JsonObject();
-    //     notification.addProperty("jsonrpc", "2.0");
-    //     notification.addProperty("method", method);
-    //     if (params != null) {
-    //         notification.add("params", params);
-    //     }
-    //     // 通知消息不包含 id 字段，表示不需要响应
-
-    //     if (configManager.getConfig().getBoolean("debug.enable")) {
-    //         logger.info("Sending notification for method: " + method);
-    //     }
-
-    //     send(notification);
+    // * 发送通知消息（同步版本，用于事件通知）
+    // *
+    // * @param method 方法名
+    // * @param params 参数对象
+    // */
+    // ublic void sendNotification(String method, JsonObject params) {
+    // JsonObject notification = new JsonObject();
+    // notification.addProperty("jsonrpc", "2.0");
+    // notification.addProperty("method", method);
+    // if (params != null) {
+    // notification.add("params", params);
     // }
+    // // 通知消息不包含 id 字段，表示不需要响应
+
+    // configManager.getConfig().getBoolean("debug.enable")) {
+    // logger.info("Sending notification for method: " + method);
+    // }
+
+    // send(notification);
+    //
 }
