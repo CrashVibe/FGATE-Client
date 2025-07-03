@@ -2,6 +2,7 @@ package com.crashvibe.fgateclient;
 
 import com.crashvibe.fgateclient.commands.PlayerBind;
 import com.crashvibe.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.listeners.OnChatMessage;
 import com.crashvibe.fgateclient.listeners.OnJoin;
 import com.crashvibe.fgateclient.manager.ServiceManager;
 import com.crashvibe.fgateclient.utils.EventUtil;
@@ -23,7 +24,6 @@ public class FGateClient extends JavaPlugin {
     public final Logger logger = getLogger();
     private ServiceManager serviceManager;
 
-    
     public static FGateClient getInstance() {
         return instance;
     }
@@ -105,7 +105,8 @@ public class FGateClient extends JavaPlugin {
 
     private void initListeners() {
         EventUtil.registerEvents(this,
-                new OnJoin(this));
+                new OnJoin(this),
+                new OnChatMessage(this));
         Objects.requireNonNull(Bukkit.getPluginCommand("fgate")).setExecutor(new PlayerBind());
     }
 

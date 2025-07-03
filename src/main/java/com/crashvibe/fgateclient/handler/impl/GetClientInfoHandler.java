@@ -42,6 +42,7 @@ public class GetClientInfoHandler extends RequestHandler {
             data.addProperty("minecraft_software", Bukkit.getName());
             data.addProperty("supports_papi", Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null);
             data.addProperty("supports_rcon", rconManager.isAvailable());
+            data.addProperty("player_count", Bukkit.getOnlinePlayers().size());
 
             JsonObject result = new JsonObject();
             result.add("data", data);

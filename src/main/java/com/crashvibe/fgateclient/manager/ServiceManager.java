@@ -90,7 +90,9 @@ public class ServiceManager {
         requestDispatcher
                 .registerHandler(new GetClientInfoHandler(webSocketManager, rconManager, logger))
                 .registerHandler(new ExecuteRconHandler(webSocketManager, rconManager))
-                .registerHandler(new KickPlayerHandler(webSocketManager, playerManager));
+                .registerHandler(new KickPlayerHandler(webSocketManager, playerManager))
+                .registerHandler(new com.crashvibe.fgateclient.handler.impl.BroadcastMessageHandler(webSocketManager,
+                        logger, foliaLib));
     }
 
     /**
