@@ -560,8 +560,6 @@ public class WebSocketManager extends WebSocketClient {
     }
 
     /**
-     *
-     *
      * @param params 参数对象
      */
     public void sendNotificationAsync(String method, JsonObject params) {

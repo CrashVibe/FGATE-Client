@@ -2,9 +2,7 @@ package com.crashvibe.fgateclient.service;
 
 import com.crashvibe.fgateclient.utils.TextUtil;
 import com.tcoded.folialib.FoliaLib;
-
 import net.kyori.adventure.text.Component;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

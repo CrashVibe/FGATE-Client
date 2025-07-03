@@ -116,7 +116,7 @@ public class ServiceManager {
     /**
      * 启动所有服务（同步版本，保持兼容性）
      */
-    
+
     public void startServices() {
         logger.info("Starting services......");
 
@@ -151,7 +151,7 @@ public class ServiceManager {
     /**
      * 停止所有服务
      */
-    
+
     public void stopServices() {
         logger.info("Stopping services......");
 
@@ -167,47 +167,47 @@ public class ServiceManager {
     }
 
     // Getter 方法
-    
+
     public Logger getLogger() {
         return logger;
     }
 
-    
+
     public RconManager getRconManager() {
         return rconManager;
     }
 
-    
+
     public ConfigManager getConfigManager() {
         return configManager;
     }
 
-    
+
     public PlayerManager getPlayerManager() {
         return playerManager;
     }
 
-    
+
     public WebSocketManager getWebSocketManager() {
         return webSocketManager;
     }
 
-    
+
     public FoliaLib getFoliaLib() {
         return foliaLib;
     }
 
-    
+
     public RequestDispatcher getRequestDispatcher() {
         return requestDispatcher;
     }
 
-    
+
     public String getClientVersion() {
         return clientVersion;
     }
 
-    
+
     public com.crashvibe.fgateclient.utils.I18n getI18n() {
         return i18n;
     }

@@ -1,9 +1,9 @@
 package com.crashvibe.fgateclient.handler.impl;
 
-import com.google.gson.JsonObject;
 import com.crashvibe.fgateclient.handler.RequestHandler;
 import com.crashvibe.fgateclient.service.WebSocketManager;
 import com.crashvibe.fgateclient.utils.TextUtil;
+import com.google.gson.JsonObject;
 import com.tcoded.folialib.FoliaLib;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;

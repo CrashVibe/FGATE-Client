@@ -1,7 +1,7 @@
 package com.crashvibe.fgateclient.example;
 
-import com.google.gson.JsonObject;
 import com.crashvibe.fgateclient.service.WebSocketManager;
+import com.google.gson.JsonObject;
 
 import java.util.HashMap;
 import java.util.Map;

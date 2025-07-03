@@ -1,6 +1,7 @@
 package com.crashvibe.fgateclient;
 
 import com.crashvibe.fgateclient.commands.PlayerBind;
+import com.crashvibe.fgateclient.commands.Tab;
 import com.crashvibe.fgateclient.config.ConfigManager;
 import com.crashvibe.fgateclient.listeners.OnChatMessage;
 import com.crashvibe.fgateclient.listeners.OnJoin;
@@ -16,6 +17,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 @SuppressWarnings("unused")
 public class FGateClient extends JavaPlugin {
 
@@ -108,6 +110,7 @@ public class FGateClient extends JavaPlugin {
                 new OnJoin(this),
                 new OnChatMessage(this));
         Objects.requireNonNull(Bukkit.getPluginCommand("fgate")).setExecutor(new PlayerBind());
+        Bukkit.getPluginCommand("fgate").setTabCompleter(new Tab());
     }
 
     public ServiceManager getServiceManager() {
