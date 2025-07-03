@@ -1,7 +1,7 @@
 package com.crashvibe.fgateclient.handler;
 
-import com.google.gson.JsonObject;
 import com.crashvibe.fgateclient.service.WebSocketManager;
+import com.google.gson.JsonObject;
 import org.jetbrains.annotations.Nullable;
 
 /**

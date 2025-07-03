@@ -1,9 +1,9 @@
 package com.crashvibe.fgateclient.handler.impl;
 
-import com.google.gson.JsonObject;
 import com.crashvibe.fgateclient.handler.RequestHandler;
 import com.crashvibe.fgateclient.service.PlayerManager;
 import com.crashvibe.fgateclient.service.WebSocketManager;
+import com.google.gson.JsonObject;
 
 /**
  * 踢出玩家请求处理器

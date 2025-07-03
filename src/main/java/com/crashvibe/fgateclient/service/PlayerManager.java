@@ -2,9 +2,7 @@ package com.crashvibe.fgateclient.service;
 
 import com.crashvibe.fgateclient.utils.TextUtil;
 import com.tcoded.folialib.FoliaLib;
-
 import net.kyori.adventure.text.Component;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -14,6 +12,7 @@ import java.util.logging.Logger;
 /**
  * 玩家管理器 - 负责玩家相关操作
  */
+@SuppressWarnings("unused")
 public class PlayerManager {
 
     private final Logger logger;

@@ -3,10 +3,57 @@ version: ${version}
 main: com.crashvibe.fgateclient.FGateClient
 api-version: "1.20"
 
+commands:
+  bind:
+    description: "Bind player to server"
+    usage: "/bind"
+    aliases: [ bin ]
+    permission: fgate.player.bind
+    permission-message: "You do not have permission to use this command"
+  unbind:
+    description: "Unbind player to server"
+    usage: "/unbind"
+    aliases: [ bin ]
+    permission: fgate.player.bind
+    permission-message: "You do not have permission to use this command"
+  fgate:
+    description: "FGate main command"
+    usage: "/fgate <args>"
+    aliases: [ fgate,flowgate ]
+    permission: fgate
+
 softdepend:
   - PlaceholderAPI
 
+authors:
+  - CrashVibe
+
+contributors:
+  - MrlingXD
+  - JohnRichard4096
+
 permissions:
-  remoteclient.admin:
+  fgate.admin.remoteclient:
     description: Admin permissions for RemoteClient
     default: op
+  fgate.admin.bind:
+    description: Bind any player to this server
+    default: op
+  fgate.admin.unbind:
+    description: Unbind any player from this server
+    default: op
+  fgate:
+    description: Main permission
+    default: true
+    children:
+      - fgate.remoteclient.admin
+      - fgate.player.unbind
+      - fgate.player.bind
+      - fgate.admin.unbind
+      - fgate.admin.bind
+  fgate.player:
+    description: Player permission
+    default: true
+  fgate.player.bind:
+    description: Bind a player to a server
+    default: true

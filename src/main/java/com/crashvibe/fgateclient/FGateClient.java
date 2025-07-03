@@ -1,19 +1,24 @@
 package com.crashvibe.fgateclient;
 
+import com.crashvibe.fgateclient.commands.PlayerBind;
+import com.crashvibe.fgateclient.commands.Tab;
 import com.crashvibe.fgateclient.config.ConfigManager;
-import com.crashvibe.fgateclient.listeners.OnJoin;
 import com.crashvibe.fgateclient.listeners.OnChatMessage;
+import com.crashvibe.fgateclient.listeners.OnJoin;
 import com.crashvibe.fgateclient.manager.ServiceManager;
 import com.crashvibe.fgateclient.utils.EventUtil;
 import com.crashvibe.fgateclient.utils.I18n;
 import com.tcoded.folialib.FoliaLib;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@SuppressWarnings("unused")
 public class FGateClient extends JavaPlugin {
 
     private static FGateClient instance;
@@ -51,30 +56,23 @@ public class FGateClient extends JavaPlugin {
                 logger.info("bStats Hook Enabled!");
 
                 // 在主线程注册事件监听器（必须在主线程）
-                getServer().getScheduler().runTask(this, () -> {
-                    initListeners();
-                });
+                getServer().getScheduler().runTask(this, this::initListeners);
+
 
                 // 异步启动服务
                 serviceManager.startServicesAsync()
-                        .thenRun(() -> {
-                            logger.info("FGateClient plugin enabled successfully!");
-                        })
+                        .thenRun(() -> logger.info("FGateClient plugin enabled successfully!"))
                         .exceptionally(throwable -> {
                             logger.log(Level.SEVERE, "Failed to start services", throwable);
                             // 在主线程禁用插件
-                            getServer().getScheduler().runTask(this, () -> {
-                                getServer().getPluginManager().disablePlugin(this);
-                            });
+                            getServer().getScheduler().runTask(this, () -> getServer().getPluginManager().disablePlugin(this));
                             return null;
                         });
 
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed to enable plugin", e);
                 // 在主线程禁用插件
-                getServer().getScheduler().runTask(this, () -> {
-                    getServer().getPluginManager().disablePlugin(this);
-                });
+                getServer().getScheduler().runTask(this, () -> getServer().getPluginManager().disablePlugin(this));
             }
         }).exceptionally(throwable -> {
             logger.log(Level.SEVERE, "Failed to initialize plugin asynchronously", throwable);
@@ -90,9 +88,7 @@ public class FGateClient extends JavaPlugin {
         if (serviceManager != null) {
             // 异步停止服务以避免阻塞服务器关闭
             serviceManager.stopServicesAsync()
-                    .thenRun(() -> {
-                        logger.info("FGateClient plugin disabled successfully!");
-                    })
+                    .thenRun(() -> logger.info("FGateClient plugin disabled successfully!"))
                     .exceptionally(throwable -> {
                         logger.warning("Error during async shutdown: " + throwable.getMessage());
                         return null;
@@ -113,6 +109,8 @@ public class FGateClient extends JavaPlugin {
         EventUtil.registerEvents(this,
                 new OnJoin(this),
                 new OnChatMessage(this));
+        Objects.requireNonNull(Bukkit.getPluginCommand("fgate")).setExecutor(new PlayerBind());
+        Bukkit.getPluginCommand("fgate").setTabCompleter(new Tab());
     }
 
     public ServiceManager getServiceManager() {

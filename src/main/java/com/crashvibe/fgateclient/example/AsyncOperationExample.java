@@ -1,10 +1,10 @@
 package com.crashvibe.fgateclient.example;
 
-import com.google.gson.JsonObject;
 import com.crashvibe.fgateclient.FGateClient;
 import com.crashvibe.fgateclient.manager.ServiceManager;
 import com.crashvibe.fgateclient.service.RconManager;
 import com.crashvibe.fgateclient.service.WebSocketManager;
+import com.google.gson.JsonObject;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 /**
  * 异步操作示例 - 展示如何正确使用异步方法避免阻塞
  */
+@SuppressWarnings("unused")
 public class AsyncOperationExample {
 
     private final FGateClient plugin;

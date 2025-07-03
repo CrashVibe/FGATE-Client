@@ -1,7 +1,7 @@
 package com.crashvibe.fgateclient.example;
 
-import com.google.gson.JsonObject;
 import com.crashvibe.fgateclient.service.WebSocketManager;
+import com.google.gson.JsonObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +12,7 @@ import java.util.logging.Logger;
  * WebSocketManager 异步使用示例
  * 展示如何使用新的异步方法来避免阻塞主线程
  */
+@SuppressWarnings("unused")
 public class AsyncWebSocketExample {
 
     private final WebSocketManager webSocketManager;

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletableFuture;
 
+@SuppressWarnings("unused")
 public class I18n {
     private final Map<String, YamlConfiguration> cache = new HashMap<>();
     private ConfigManager configManager;

@@ -1,9 +1,9 @@
 package com.crashvibe.fgateclient.handler.impl;
 
-import com.google.gson.JsonObject;
 import com.crashvibe.fgateclient.handler.RequestHandler;
 import com.crashvibe.fgateclient.service.RconManager;
 import com.crashvibe.fgateclient.service.WebSocketManager;
+import com.google.gson.JsonObject;
 import org.bukkit.Bukkit;
 
 import java.util.logging.Logger;
