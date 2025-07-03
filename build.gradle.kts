@@ -27,7 +27,7 @@ dependencies {
     compileOnly("org.jetbrains:annotations:26.0.2")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.java-websocket:Java-WebSocket:1.6.0")
-    implementation("com.github.technicallycoded:FoliaLib:main-SNAPSHOT")
+    implementation("com.github.technicallycoded:FoliaLib:0.4.4")
     implementation("org.bstats:bstats-bukkit:3.1.0")
 }
 
