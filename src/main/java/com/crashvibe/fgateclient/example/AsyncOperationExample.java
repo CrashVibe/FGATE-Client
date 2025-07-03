@@ -1,10 +1,10 @@
 package com.crashvibe.fgateclient.example;
 
-import com.google.gson.JsonObject;
 import com.crashvibe.fgateclient.FGateClient;
 import com.crashvibe.fgateclient.manager.ServiceManager;
 import com.crashvibe.fgateclient.service.RconManager;
 import com.crashvibe.fgateclient.service.WebSocketManager;
+import com.google.gson.JsonObject;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;

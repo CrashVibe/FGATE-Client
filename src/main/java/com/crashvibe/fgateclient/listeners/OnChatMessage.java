@@ -4,11 +4,10 @@ import com.crashvibe.fgateclient.FGateClient;
 import com.crashvibe.fgateclient.manager.ServiceManager;
 import com.crashvibe.fgateclient.service.WebSocketManager;
 import com.google.gson.JsonObject;
-
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 
 /**
  * 聊天消息监听器 - 监听玩家聊天消息并发送到主机端
