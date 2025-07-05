@@ -14,6 +14,10 @@ import com.tcoded.folialib.FoliaLib;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 /**
@@ -33,6 +37,7 @@ public class ServiceManager {
     private PlayerManager playerManager;
     private WebSocketManager webSocketManager;
     private RequestDispatcher requestDispatcher;
+    private final AtomicReference<ExecutorService> executorService = new AtomicReference<>();
 
     public ServiceManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager, String clientVersion,
                           com.crashvibe.fgateclient.utils.I18n i18n) {
@@ -42,7 +47,14 @@ public class ServiceManager {
         this.clientVersion = clientVersion;
         this.i18n = i18n;
         instance = this;
-
+        
+        // 创建专用线程池用于插件任务
+        executorService.set(Executors.newFixedThreadPool(3, r -> {
+            Thread t = new Thread(r, "FGateClient-Worker-" + r.hashCode());
+            t.setDaemon(true);
+            return t;
+        }));
+        
         // 异步初始化I18n的配置管理器引用和预加载
         i18n.initializeAsync(configManager)
                 .thenCompose(v -> i18n.preloadLanguageFilesAsync())
@@ -143,7 +155,21 @@ public class ServiceManager {
             if (rconManager != null) {
                 rconManager.close();
             }
-
+            
+            // 关闭线程池
+            ExecutorService es = executorService.getAndSet(null);
+            if (es != null) {
+                try {
+                    es.shutdown();
+                    if (!es.awaitTermination(500, TimeUnit.MILLISECONDS)) {
+                        es.shutdownNow();
+                    }
+                } catch (InterruptedException e) {
+                    es.shutdownNow();
+                    Thread.currentThread().interrupt();
+                }
+            }
+            
             logger.info("ALL SERVICES HAS STOPPED");
         });
     }
