@@ -1,6 +1,6 @@
 package com.crashvibe.fgateclient.service;
 
-import com.crashvibe.fgateclient.ConfigManager;
+import com.crashvibe.fgateclient.config.ConfigManager;
 import com.crashvibe.fgateclient.handler.RequestDispatcher;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -22,7 +22,6 @@ import java.util.logging.Logger;
  */
 public class WebSocketManager extends WebSocketClient {
 
-    private static final int MAX_RETRY_COUNT = 5;
     public final Map<String, CompletableFuture<JsonObject>> pendingRequests = new ConcurrentHashMap<>();
     private final Logger logger;
     private final FoliaLib foliaLib;
@@ -32,7 +31,6 @@ public class WebSocketManager extends WebSocketClient {
     private final WebSocketClient client;
     private boolean connected = false;
     private int retryCount = 0;
-    private long lastReconnectAttempt = 0;
 
     public WebSocketManager(URI uri, String token, Logger logger, FoliaLib foliaLib,
                             ConfigManager configManager, RequestDispatcher requestDispatcher,
@@ -123,7 +121,6 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 异步断开连接
      */
-    @SuppressWarnings("unused")
     public CompletableFuture<Void> disconnectAsync() {
         return CompletableFuture.runAsync(() -> {
             connected = false;
@@ -322,28 +319,15 @@ public class WebSocketManager extends WebSocketClient {
     }
 
     private void scheduleReconnect() {
-        long now = System.currentTimeMillis();
-        if (now - lastReconnectAttempt < 5000) { // 5秒内不重复尝试重连
-            logger.warning("Reconnection attempt too frequent, skipping");
-            return;
-        }
-
-        lastReconnectAttempt = now;
-
-        // 使用退避策略，初始1秒，每次增加1秒，最大10秒
-        long delay = Math.min(10000, 1000 * (retryCount + 1));
-
-        foliaLib.getScheduler().runLaterAsync(task -> {
+        CompletableFuture.runAsync(() -> {
             try {
+                // 等待一段时间再重连
+                Thread.sleep(1000); // 1秒延迟
                 reconnect();
-                retryCount++;
-                if (retryCount >= MAX_RETRY_COUNT) {
-                    logger.warning("Reached maximum retry count. Stopping automatic reconnection.");
-                }
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Reconnect failed: " + e.getMessage(), e);
             }
-        }, delay, java.util.concurrent.TimeUnit.MILLISECONDS);
+        });
     }
 
     /**
@@ -558,18 +542,14 @@ public class WebSocketManager extends WebSocketClient {
             try {
                 // 先断开连接
                 disconnect();
+                Thread.sleep(1000); // 等待1秒
 
                 // 重置重试计数
                 retryCount = 0;
 
-                // 使用异步调度器执行重连
-                foliaLib.getScheduler().runLaterAsync(task -> {
-                    try {
-                        reconnect();
-                    } catch (Exception e) {
-                        logger.log(Level.SEVERE, "Async reconnect failed", e);
-                    }
-                }, 1000, java.util.concurrent.TimeUnit.MILLISECONDS);
+                // 重新连接
+                reconnect();
+                Thread.sleep(2000); // 等待2秒让连接建立
 
                 return isConnected();
             } catch (Exception e) {
