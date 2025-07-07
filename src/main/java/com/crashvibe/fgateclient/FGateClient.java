@@ -1,19 +1,15 @@
 package com.crashvibe.fgateclient;
 
-import com.crashvibe.fgateclient.commands.PlayerBind;
-import com.crashvibe.fgateclient.commands.Tab;
-import com.crashvibe.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.commands.PaperCommand;
 import com.crashvibe.fgateclient.listeners.OnChatMessage;
 import com.crashvibe.fgateclient.listeners.OnJoin;
-import com.crashvibe.fgateclient.manager.ServiceManager;
 import com.crashvibe.fgateclient.utils.EventUtil;
 import com.crashvibe.fgateclient.utils.I18n;
 import com.tcoded.folialib.FoliaLib;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bstats.bukkit.Metrics;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,24 +34,22 @@ public class FGateClient extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // 异步初始化插件，避免阻塞服务器启动
+        saveDefaultConfig();
+        reloadConfig();
+
+        logger.info("Configuration loaded, initializing services...");
+        serviceManager = new ServiceManager(logger, foliaLib, new ConfigManager(this),
+                getPluginMeta().getVersion(), new I18n(getDataFolder()));
+
+        new Metrics(this, 26085);
+        logger.info("bStats Hook Enabled!");
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->{
+            event.registrar().register(PaperCommand.createCommand(), "Flow Gate主命令");
+            event.registrar().register(PaperCommand.bindCommand(), "玩家绑定");
+            event.registrar().register(PaperCommand.unbindCommand(), "玩家解绑");
+        });
         CompletableFuture.runAsync(() -> {
             try {
-                // 异步加载配置文件
-                saveDefaultConfig();
-                reloadConfig();
-
-                logger.info("Configuration loaded, initializing services...");
-
-                // 异步创建服务管理器
-                serviceManager = new ServiceManager(logger, foliaLib, new ConfigManager(this),
-                        getPluginMeta().getVersion(), new I18n(getDataFolder()));
-
-                // 初始化 bStats
-                new Metrics(this, 26085);
-                logger.info("bStats Hook Enabled!");
-
-                // 在主线程注册事件监听器（必须在主线程）
                 getServer().getScheduler().runTask(this, this::initListeners);
 
 
@@ -93,13 +87,6 @@ public class FGateClient extends JavaPlugin {
                         logger.warning("Error during async shutdown: " + throwable.getMessage());
                         return null;
                     });
-
-            // 给异步操作一些时间完成，但不无限等待
-            try {
-                Thread.sleep(1000); // 最多等待1秒
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
         } else {
             logger.info("FGateClient plugin disabled!");
         }
@@ -109,8 +96,6 @@ public class FGateClient extends JavaPlugin {
         EventUtil.registerEvents(this,
                 new OnJoin(this),
                 new OnChatMessage(this));
-        Objects.requireNonNull(Bukkit.getPluginCommand("fgate")).setExecutor(new PlayerBind());
-        Bukkit.getPluginCommand("fgate").setTabCompleter(new Tab());
     }
 
     public ServiceManager getServiceManager() {
