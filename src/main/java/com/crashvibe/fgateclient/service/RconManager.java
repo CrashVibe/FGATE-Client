@@ -1,6 +1,6 @@
 package com.crashvibe.fgateclient.service;
 
-import com.crashvibe.fgateclient.ConfigManager;
+import com.crashvibe.fgateclient.config.ConfigManager;
 import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;

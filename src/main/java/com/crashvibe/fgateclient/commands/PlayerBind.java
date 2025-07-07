@@ -1,32 +1,34 @@
 package com.crashvibe.fgateclient.commands;
 
 import com.crashvibe.fgateclient.FGateClient;
+import com.crashvibe.fgateclient.manager.ServiceManager;
 import com.crashvibe.fgateclient.service.WebSocketManager;
 import com.crashvibe.fgateclient.utils.I18n;
 import com.google.gson.JsonObject;
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
-import static net.kyori.adventure.text.format.NamedTextColor.RED;
+public final class PlayerBind implements CommandExecutor {
+    private static WebSocketManager webSocketManager = null;
+    private final I18n i18n = ServiceManager.getInstance().getI18n();
 
-public class PaperCommand {
-    private static final I18n i18n = FGateClient.getInstance().getServiceManager().getI18n();
-    private static final WebSocketManager webSocketManager = FGateClient.getInstance().getServiceManager().getWebSocketManager();
+    public static void initWebsocketManager() {
+        if (webSocketManager != null) {
+            throw new RuntimeException("WebSocketManager has been initialized");
+        }
+        webSocketManager = ServiceManager.getInstance().getWebSocketManager();
+    }
 
-    private static int unbind_player(CommandSender sender) {
+    private boolean unbind_player(CommandSender sender) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage(NamedTextColor.RED + i18n.get("player_only"));
-            return Command.SINGLE_SUCCESS;
+            return true;
         }
         JsonObject params = new JsonObject();
         AtomicReference<JsonObject> bindResult = new AtomicReference<>(new JsonObject());
@@ -38,21 +40,22 @@ public class PaperCommand {
         webSocketManager.sendRequestAsync("player.bindQuery", params).thenAccept(bindResult::set);
         if (!bindResult.get().getAsJsonObject("result").get("isBind").getAsBoolean()) {
             sender.sendMessage(NamedTextColor.GOLD + i18n.get("not_bind_yet"));
+            return true;
         } else {
             webSocketManager.sendRequestAsync("player.unbind", params).thenAccept(data::set);
             if (!data.get().getAsJsonObject("result").get("isSuccess").getAsBoolean()) {
                 sender.sendMessage(NamedTextColor.RED + i18n.get("unbind_fail"));
                 sender.sendMessage(NamedTextColor.RED + data.get().getAsJsonObject("result").get("message").getAsString());
-                return Command.SINGLE_SUCCESS;
+                return true;
             }
             sender.sendMessage(NamedTextColor.GOLD + i18n.get("unbind_success"));
             player.kickPlayer(i18n.get("player_unbind"));
+            return true;
 
         }
-        return Command.SINGLE_SUCCESS;
     }
 
-    private static int bind_player(CommandSender sender) {
+    private boolean bind_player(CommandSender sender) {
         JsonObject params = new JsonObject();
         AtomicReference<JsonObject> bindResult = new AtomicReference<>(new JsonObject());
         AtomicReference<JsonObject> data = new AtomicReference<>(new JsonObject());
@@ -61,7 +64,7 @@ public class PaperCommand {
             params.addProperty("playerUUID", player.getUniqueId().toString());
         } else {
             sender.sendMessage(NamedTextColor.RED + i18n.get("player_only"));
-            return Command.SINGLE_SUCCESS;
+            return true;
         }
 
 
@@ -76,51 +79,36 @@ public class PaperCommand {
             sender.sendMessage(NamedTextColor.GOLD + i18n.format("got_auth_code", formatParam));
 
         }
-        return Command.SINGLE_SUCCESS;
+        return true;
 
     }
 
-    public static LiteralCommandNode<CommandSourceStack> createCommand() {
-        return Commands.literal("fgate")
-                .then(Commands.literal("info")
-                        .executes(context -> {
-                            sendInfoMessage(context.getSource().getSender());
-                            return Command.SINGLE_SUCCESS;
-                        }))
-                .then(Commands.literal("bind")
-                        .requires(source -> source.getSender().hasPermission("fgate.admin.bind"))
-                        .executes(context -> {
-                            CommandSender sender = context.getSource().getSender();
-                            if (!(sender instanceof Player)) {
-                                sender.sendMessage(text(i18n.get("player_only"), RED));
-                                return Command.SINGLE_SUCCESS;
-                            }
-
-                            return bind_player(sender);
-                        }))
-                .then(Commands.literal("unbind")
-                        .requires(source -> source.getSender().hasPermission("fgate.admin.unbind"))
-                        .executes(context -> {
-                            CommandSender sender = context.getSource().getSender();
-                            if (!(sender instanceof Player player)) {
-                                sender.sendMessage(text(i18n.get("player_only"), RED));
-                                return Command.SINGLE_SUCCESS;
-                            }
-
-                            return unbind_player(sender);
-                        }))
-                .executes(context -> {
-                    sendInfoMessage(context.getSource().getSender());
-                    return Command.SINGLE_SUCCESS;
-                })
-                .build();
-    }
-
-    private static void sendInfoMessage(CommandSender sender) {
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, org.bukkit.command.@NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         FGateClient plugin = FGateClient.getInstance();
-        sender.sendMessage(text(
-                "FLOW GATE" + plugin.getPluginMeta().getVersion(),
-                GOLD
-        ));
+        String fgate_info = NamedTextColor.GOLD + "FLOW GATE" + NamedTextColor.GREEN + plugin.getPluginMeta().getVersion();
+        switch (command.getName()) {
+            case "fgate" -> {
+                if (args.length == 0) {
+                    sender.sendMessage(fgate_info);
+                    return true;
+                } else {
+                    if (args[0].equals("info")) {
+                        sender.sendMessage(fgate_info);
+                        return true;
+                    }
+
+
+                }
+            }
+            case "bind" -> {
+                return bind_player(sender);
+
+            }
+            case ("unbind") -> {
+                return unbind_player(sender);
+            }
+        }
+        return false;
     }
 }

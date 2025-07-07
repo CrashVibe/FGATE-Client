@@ -6,8 +6,8 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
  * 文本处理工具类 - 支持多种颜色代码格式
@@ -97,7 +97,7 @@ public class TextUtil {
      */
     private static String convertHexColors(String text) {
         Matcher matcher = HEX_PATTERN.matcher(text);
-        StringBuilder result = new StringBuilder();
+        StringBuffer result = new StringBuffer();
 
         while (matcher.find()) {
             String hexColor = matcher.group(1);
@@ -149,7 +149,6 @@ public class TextUtil {
      * @param color 颜色
      * @return 带颜色的Component
      */
-    @SuppressWarnings("unused")
     public static Component colored(String text, NamedTextColor color) {
         return Component.text(text, color);
     }
@@ -161,7 +160,6 @@ public class TextUtil {
      * @param hexColor 十六进制颜色代码（不带#）
      * @return 带颜色的Component
      */
-    @SuppressWarnings("unused")
     public static Component colored(String text, String hexColor) {
         try {
             TextColor color = TextColor.fromHexString("#" + hexColor);
@@ -181,7 +179,6 @@ public class TextUtil {
      * @param blue  蓝色值 (0-255)
      * @return 带颜色的Component
      */
-    @SuppressWarnings("unused")
     public static Component colored(String text, int red, int green, int blue) {
         try {
             TextColor color = TextColor.color(red, green, blue);
@@ -221,7 +218,7 @@ public class TextUtil {
      */
     public static Component[] parseLines(String text) {
         if (text == null || text.isEmpty()) {
-            return new Component[]{Component.empty()};
+            return new Component[] { Component.empty() };
         }
 
         String[] lines = text.split("\n");
