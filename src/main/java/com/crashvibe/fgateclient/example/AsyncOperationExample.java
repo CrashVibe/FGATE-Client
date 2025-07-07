@@ -1,7 +1,7 @@
 package com.crashvibe.fgateclient.example;
 
 import com.crashvibe.fgateclient.FGateClient;
-import com.crashvibe.fgateclient.manager.ServiceManager;
+import com.crashvibe.fgateclient.ServiceManager;
 import com.crashvibe.fgateclient.service.RconManager;
 import com.crashvibe.fgateclient.service.WebSocketManager;
 import com.google.gson.JsonObject;

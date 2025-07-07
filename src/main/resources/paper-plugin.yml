@@ -6,20 +6,20 @@ api-version: "1.20"
 commands:
   bind:
     description: "Bind player to server"
-    usage: "/bind"
+    usage: "/<command>"
     aliases: [ bin ]
     permission: fgate.player.bind
     permission-message: "You do not have permission to use this command"
   unbind:
     description: "Unbind player to server"
-    usage: "/unbind"
-    aliases: [ bin ]
+    usage: "/<command>"
+    aliases: [ unbin ]
     permission: fgate.player.bind
     permission-message: "You do not have permission to use this command"
   fgate:
     description: "FGate main command"
-    usage: "/fgate <args>"
-    aliases: [ fgate,flowgate ]
+    usage: "/<command> <args>"
+    aliases: [flowgate ]
     permission: fgate
 
 softdepend:
