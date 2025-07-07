@@ -79,7 +79,18 @@ public class PaperCommand {
         return Command.SINGLE_SUCCESS;
 
     }
+    public static LiteralCommandNode<CommandSourceStack> bindCommand(){
+        return Commands.literal("bind").requires(source -> source.getSender().hasPermission("fgate.player.bind")).executes(context -> bind_player(context.getSource().getSender()))
 
+                .build();
+
+    }
+    public static LiteralCommandNode<CommandSourceStack> unbindCommand(){
+        return Commands.literal("unbind").requires(source -> source.getSender().hasPermission("fgate.player.unbind")).executes(context -> unbind_player(context.getSource().getSender()))
+
+                .build();
+
+    }
     public static LiteralCommandNode<CommandSourceStack> createCommand() {
         return Commands.literal("fgate")
                 .then(Commands.literal("info")
@@ -102,7 +113,7 @@ public class PaperCommand {
                         .requires(source -> source.getSender().hasPermission("fgate.admin.unbind"))
                         .executes(context -> {
                             CommandSender sender = context.getSource().getSender();
-                            if (!(sender instanceof Player player)) {
+                            if (!(sender instanceof Player)) {
                                 sender.sendMessage(text(i18n.get("player_only"), RED));
                                 return Command.SINGLE_SUCCESS;
                             }

@@ -57,3 +57,6 @@ permissions:
   fgate.player.bind:
     description: Bind a player to a server
     default: true
+  fgate.player.unbind:
+      description: Unbind a player from a server
+      default: true

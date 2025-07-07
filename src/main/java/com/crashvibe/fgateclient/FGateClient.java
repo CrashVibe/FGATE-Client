@@ -43,7 +43,11 @@ public class FGateClient extends JavaPlugin {
 
         new Metrics(this, 26085);
         logger.info("bStats Hook Enabled!");
-        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> event.registrar().register(PaperCommand.createCommand(), "Flow Gate主命令"));
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->{
+            event.registrar().register(PaperCommand.createCommand(), "Flow Gate主命令");
+            event.registrar().register(PaperCommand.bindCommand(), "玩家绑定");
+            event.registrar().register(PaperCommand.unbindCommand(), "玩家解绑");
+        });
         CompletableFuture.runAsync(() -> {
             try {
                 getServer().getScheduler().runTask(this, this::initListeners);
