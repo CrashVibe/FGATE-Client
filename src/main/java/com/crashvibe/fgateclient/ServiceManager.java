@@ -1,7 +1,6 @@
-package com.crashvibe.fgateclient.manager;
+package com.crashvibe.fgateclient;
 
 import com.crashvibe.fgateclient.commands.PlayerBind;
-import com.crashvibe.fgateclient.config.ConfigManager;
 import com.crashvibe.fgateclient.handler.RequestDispatcher;
 import com.crashvibe.fgateclient.handler.impl.ExecuteRconHandler;
 import com.crashvibe.fgateclient.handler.impl.GetClientInfoHandler;

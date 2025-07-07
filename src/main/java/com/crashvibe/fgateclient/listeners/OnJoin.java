@@ -1,8 +1,8 @@
 package com.crashvibe.fgateclient.listeners;
 
 import com.crashvibe.fgateclient.FGateClient;
-import com.crashvibe.fgateclient.config.ConfigManager;
-import com.crashvibe.fgateclient.manager.ServiceManager;
+import com.crashvibe.fgateclient.ConfigManager;
+import com.crashvibe.fgateclient.ServiceManager;
 import com.crashvibe.fgateclient.service.WebSocketManager;
 import com.crashvibe.fgateclient.utils.I18n;
 import com.crashvibe.fgateclient.utils.TextUtil;

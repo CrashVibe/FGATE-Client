@@ -1,6 +1,6 @@
 package com.crashvibe.fgateclient.service;
 
-import com.crashvibe.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.ConfigManager;
 import com.crashvibe.fgateclient.handler.RequestDispatcher;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -123,6 +123,7 @@ public class WebSocketManager extends WebSocketClient {
     /**
      * 异步断开连接
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<Void> disconnectAsync() {
         return CompletableFuture.runAsync(() -> {
             connected = false;
@@ -338,7 +339,6 @@ public class WebSocketManager extends WebSocketClient {
                 retryCount++;
                 if (retryCount >= MAX_RETRY_COUNT) {
                     logger.warning("Reached maximum retry count. Stopping automatic reconnection.");
-                    return;
                 }
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Reconnect failed: " + e.getMessage(), e);

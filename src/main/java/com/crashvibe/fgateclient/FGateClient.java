@@ -2,10 +2,8 @@ package com.crashvibe.fgateclient;
 
 import com.crashvibe.fgateclient.commands.PlayerBind;
 import com.crashvibe.fgateclient.commands.Tab;
-import com.crashvibe.fgateclient.config.ConfigManager;
 import com.crashvibe.fgateclient.listeners.OnChatMessage;
 import com.crashvibe.fgateclient.listeners.OnJoin;
-import com.crashvibe.fgateclient.manager.ServiceManager;
 import com.crashvibe.fgateclient.utils.EventUtil;
 import com.crashvibe.fgateclient.utils.I18n;
 import com.tcoded.folialib.FoliaLib;

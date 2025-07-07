@@ -1,4 +1,4 @@
-package com.crashvibe.fgateclient.config;
+package com.crashvibe.fgateclient;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
