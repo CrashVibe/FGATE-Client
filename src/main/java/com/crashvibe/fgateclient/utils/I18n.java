@@ -1,13 +1,12 @@
 package com.crashvibe.fgateclient.utils;
 
-import com.crashvibe.fgateclient.config.ConfigManager;
+import com.crashvibe.fgateclient.ConfigManager;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")

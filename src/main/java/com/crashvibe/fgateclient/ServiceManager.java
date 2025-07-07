@@ -1,7 +1,5 @@
-package com.crashvibe.fgateclient.manager;
+package com.crashvibe.fgateclient;
 
-import com.crashvibe.fgateclient.commands.PlayerBind;
-import com.crashvibe.fgateclient.config.ConfigManager;
 import com.crashvibe.fgateclient.handler.RequestDispatcher;
 import com.crashvibe.fgateclient.handler.impl.ExecuteRconHandler;
 import com.crashvibe.fgateclient.handler.impl.GetClientInfoHandler;
@@ -32,12 +30,12 @@ public class ServiceManager {
     private final ConfigManager configManager;
     private final String clientVersion;
     private final com.crashvibe.fgateclient.utils.I18n i18n;
+    private final AtomicReference<ExecutorService> executorService = new AtomicReference<>();
     // 服务实例
     private RconManager rconManager;
     private PlayerManager playerManager;
     private WebSocketManager webSocketManager;
     private RequestDispatcher requestDispatcher;
-    private final AtomicReference<ExecutorService> executorService = new AtomicReference<>();
 
     public ServiceManager(Logger logger, FoliaLib foliaLib, ConfigManager configManager, String clientVersion,
                           com.crashvibe.fgateclient.utils.I18n i18n) {
@@ -47,14 +45,14 @@ public class ServiceManager {
         this.clientVersion = clientVersion;
         this.i18n = i18n;
         instance = this;
-        
+
         // 创建专用线程池用于插件任务
         executorService.set(Executors.newFixedThreadPool(3, r -> {
             Thread t = new Thread(r, "FGateClient-Worker-" + r.hashCode());
             t.setDaemon(true);
             return t;
         }));
-        
+
         // 异步初始化I18n的配置管理器引用和预加载
         i18n.initializeAsync(configManager)
                 .thenCompose(v -> i18n.preloadLanguageFilesAsync())
@@ -94,7 +92,6 @@ public class ServiceManager {
 
         // 注册请求处理器
         registerHandlers();
-        PlayerBind.initWebsocketManager();
         logger.info("Init done, " + requestDispatcher.getHandlerCount() + " handlers has been enabled");
     }
 
@@ -155,7 +152,7 @@ public class ServiceManager {
             if (rconManager != null) {
                 rconManager.close();
             }
-            
+
             // 关闭线程池
             ExecutorService es = executorService.getAndSet(null);
             if (es != null) {
@@ -169,7 +166,7 @@ public class ServiceManager {
                     Thread.currentThread().interrupt();
                 }
             }
-            
+
             logger.info("ALL SERVICES HAS STOPPED");
         });
     }
